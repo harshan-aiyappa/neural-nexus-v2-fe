@@ -1,6 +1,11 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-jungle-teal: #518E6D;
+  --color-turf-green: #107B41;
+  --color-turf-green-dark: #12753D;
+  --color-turf-green-deep: #216D44;
+}
 
 @layer base {
   body {
