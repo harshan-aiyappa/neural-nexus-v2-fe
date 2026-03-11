@@ -3,12 +3,27 @@
 @theme {
   --color-jungle-teal: #518E6D;
   --color-turf-green: #107B41;
-  --color-turf-green-dark: #12753D;
-  --color-turf-green-deep: #216D44;
+  --color-turf-green-2: #12753D;
+  --color-turf-green-3: #216D44;
+  --color-nesso-white: #FFFFFF;
+
+  --gradient-nesso-top: linear-gradient(0deg, #518E6Dff, #107B41ff, #FFFFFFff, #12753Dff, #216D44ff);
+  --gradient-nesso-right: linear-gradient(90deg, #518E6Dff, #107B41ff, #FFFFFFff, #12753Dff, #216D44ff);
+  --gradient-nesso-radial: radial-gradient(#518E6Dff, #107B41ff, #FFFFFFff, #12753Dff, #216D44ff);
 }
 
 @layer base {
   body {
-    @apply bg-slate-900 text-slate-100 antialiased font-sans;
+    @apply antialiased font-sans;
+  }
+}
+
+@layer utilities {
+  .glow-text {
+    text-shadow: 0 0 10px rgba(81, 142, 109, 0.4);
+  }
+
+  .glow-border {
+    box-shadow: 0 0 15px rgba(81, 142, 109, 0.2);
   }
 }

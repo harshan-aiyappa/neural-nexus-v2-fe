@@ -1,7 +1,8 @@
-import { Box, Flex, VStack, HStack, Heading, Text, Circle, Icon } from '@chakra-ui/react';
+import { Box, Flex, VStack, HStack, Heading, Text, Icon } from '@chakra-ui/react';
 import { NavLink } from 'react-router-dom';
 import { ColorModeButton, useColorModeValue } from '@/components/ui/color-mode';
 import { LuLayoutDashboard, LuLibrary, LuDatabase, LuLogOut, LuTelescope } from 'react-icons/lu';
+import logoImg from '@/assets/nesso___nr_group_logo.jpeg';
 
 interface SidebarItemProps {
     icon: any;
@@ -27,7 +28,7 @@ const SidebarItem = ({ icon, label, to }: SidebarItemProps) => {
                     w="full"
                     spaceX={3}
                 >
-                    <Icon as={icon} size="18px" />
+                    <Icon as={icon} size="sm" />
                     <Text fontSize="sm" fontWeight={isActive ? 'bold' : 'medium'}>{label}</Text>
                 </HStack>
             )}
@@ -35,32 +36,40 @@ const SidebarItem = ({ icon, label, to }: SidebarItemProps) => {
     );
 };
 
-export const Shell = ({ children }: { children: React.ReactNode }) => {
+export const Shell = ({ children, userEmail }: { children: React.ReactNode, userEmail: string }) => {
+    const bgCanvas = useColorModeValue('white', 'bg.canvas');
+    const bgSidebar = useColorModeValue('gray.50', 'bg.surface');
+    const borderColor = useColorModeValue('gray.100', 'border.subtle');
+    const textColor = useColorModeValue('slate.900', 'white');
+
     return (
-        <Box minH="100vh" bg={useColorModeValue('white', 'slate.950')} color={useColorModeValue('slate.900', 'white')}>
+        <Box minH="100vh" bg={bgCanvas} color={textColor}>
             <Flex h="100vh" overflow="hidden">
                 {/* Sidebar */}
                 <VStack
                     w="280px"
                     borderRight="1px"
-                    borderColor="jungle-teal/10"
+                    borderColor={borderColor}
                     p={6}
                     align="stretch"
                     justifyContent="space-between"
-                    bg="black/5"
+                    bg={bgSidebar}
                 >
                     <VStack align="stretch" spaceY={8}>
                         <HStack spaceX={3} mb={6}>
                             <Box
-                                w="40px" h="40px"
-                                bgGradient="to-br" gradientFrom="jungle-teal" gradientTo="turf-green"
+                                w="45px" h="45px"
                                 rounded="lg"
-                                display="flex" alignItems="center" justifyContent="center"
+                                overflow="hidden"
                                 shadow="lg"
+                                bg="white"
                             >
-                                <Box w="20px" h="20px" border="2px solid white" rounded="full" opacity="0.8" />
+                                <img src={logoImg} alt="Nesso Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                             </Box>
-                            <Heading size="md" letterSpacing="tight">Neural Nexus <Text as="span" color="turf-green">V2</Text></Heading>
+                            <VStack align="start" spaceY={0}>
+                                <Heading size="md" letterSpacing="tight" lineHeight="1">Neural Nexus</Heading>
+                                <Text fontSize="10px" fontWeight="black" color="turf-green" letterSpacing="widest">V2 // NESSO PLATFORM</Text>
+                            </VStack>
                         </HStack>
 
                         <VStack align="stretch" spaceY={1}>
@@ -72,9 +81,15 @@ export const Shell = ({ children }: { children: React.ReactNode }) => {
                     </VStack>
 
                     <VStack align="stretch" spaceY={4}>
-                        <HStack justifyContent="space-between" p={2}>
-                            <ColorModeButton />
-                            <SidebarItem icon={LuLogOut} label="Logout" to="/logout" />
+                        <HStack justifyContent="space-between" p={2} borderTop="1px solid" borderColor={borderColor} pt={6}>
+                            <VStack align="start" spaceY={0}>
+                                <Text fontSize="10px" fontWeight="black" color="jungle-teal" letterSpacing="widest">RESEARCHER</Text>
+                                <Text fontSize="xs" fontWeight="bold" color="slate.500" truncate maxW="150px">{userEmail}</Text>
+                            </VStack>
+                            <HStack spaceX={2}>
+                                <ColorModeButton />
+                                <SidebarItem icon={LuLogOut} label="" to="/logout" />
+                            </HStack>
                         </HStack>
                     </VStack>
                 </VStack>

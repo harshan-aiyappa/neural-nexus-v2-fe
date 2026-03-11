@@ -7,16 +7,8 @@ import { Library } from '@/pages/Library'
 import { Discovery } from '@/pages/Discovery'
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [userEmail, setUserEmail] = useState('')
-
-  useEffect(() => {
-    const savedEmail = localStorage.getItem('nexus_user')
-    if (savedEmail) {
-      setIsLoggedIn(true)
-      setUserEmail(savedEmail)
-    }
-  }, [])
+  const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem('nexus_user'));
+  const [userEmail, setUserEmail] = useState(() => localStorage.getItem('nexus_user') || '');
 
   const handleLogin = (email: string) => {
     localStorage.setItem('nexus_user', email)
@@ -36,7 +28,7 @@ function App() {
 
   return (
     <Router>
-      <Shell>
+      <Shell userEmail={userEmail}>
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/library" element={<Library />} />

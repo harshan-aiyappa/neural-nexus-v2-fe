@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react';
+import { useRef } from 'react';
 import ForceGraph3D from 'react-force-graph-3d';
 import * as THREE from 'three';
 
@@ -21,11 +21,7 @@ interface GraphData {
 }
 
 export const NexusGraph = ({ data }: { data: GraphData }) => {
-    const fgRef = useRef<any>();
-
-    const paintNode = useCallback((node: any, ctx: any) => {
-        // Custom node painting logic for premium feel if needed
-    }, []);
+    const fgRef = useRef<any>(null);
 
     return (
         <div className="w-full h-[600px] rounded-3xl overflow-hidden border border-jungle-teal/30 shadow-2xl bg-black/20 backdrop-blur-sm">

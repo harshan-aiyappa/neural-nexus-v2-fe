@@ -1,14 +1,14 @@
-import { Box, Heading, Text, VStack, HStack, Circle, Flex, Input, Button, Spinner } from '@chakra-ui/react';
+import { Box, Heading, Text, VStack, HStack, Circle, Flex, Input, Button, Badge, Icon } from '@chakra-ui/react';
 import { useColorModeValue } from '@/components/ui/color-mode';
 import { useState, useRef, useEffect } from 'react';
-import { LuSend, LuScanSearch } from 'react-icons/lu';
+import { LuSend, LuSearch as LuScanSearch, LuNetwork, LuInfinity, LuZap } from 'react-icons/lu';
 import { NexusGraph } from '@/components/graph/3d/ForceGraph3D';
 import gsap from 'gsap';
 
 export const Discovery = () => {
     const [query, setQuery] = useState('');
-    const [loading, setLoading] = useState(false);
     const headerRef = useRef(null);
+    const chatRef = useRef(null);
 
     const mockGraphData = {
         nodes: [
@@ -24,92 +24,125 @@ export const Discovery = () => {
     };
 
     useEffect(() => {
-        gsap.from(headerRef.current, {
-            opacity: 0,
-            x: -20,
-            duration: 1,
-            ease: 'power3.out'
-        });
+        gsap.from(headerRef.current, { opacity: 0, x: -20, duration: 1, ease: 'power3.out' });
+        gsap.from(chatRef.current, { opacity: 0, y: 20, duration: 1, delay: 0.5, ease: 'power3.out' });
     }, []);
 
     return (
-        <Flex h="full" bg="slate.950" position="relative" overflow="hidden">
+        <Flex h="full" bg="bg.canvas" position="relative" overflow="hidden">
             {/* Graph Background */}
-            <Box w="full" h="full">
+            <Box w="full" h="full" position="relative">
                 <NexusGraph data={mockGraphData} />
+                {/* Visual Overlay for Depth */}
+                <Box position="absolute" top={0} left={0} w="full" h="full" bgGradient="radial" gradientFrom="transparent" gradientTo="black/40" pointerEvents="none" />
             </Box>
 
-            {/* Float UI: Header */}
+            {/* Floating UI: Header */}
             <Box position="absolute" top={10} left={10} zIndex={10} ref={headerRef}>
                 <VStack align="start" spaceY={1}>
                     <HStack spaceX={3}>
-                        <Circle size="3" bg="jungle-teal" />
-                        <Heading size="lg" fontWeight="black" color="white" letterSpacing="tight">Graph Discovery</Heading>
+                        <Box p={2} bg="jungle-teal" rounded="lg" shadow="xl">
+                            <LuNetwork color="white" size="20px" />
+                        </Box>
+                        <VStack align="start" spaceY={0}>
+                            <Heading size="lg" fontWeight="black" color={useColorModeValue('nesso-dark', 'white')} letterSpacing="tight">Graph Discovery</Heading>
+                            <HStack spaceX={2}>
+                                <Circle size="2" bg="turf-green" className="animate-pulse" />
+                                <Text fontSize="10px" color="slate.500" fontWeight="black" letterSpacing="widest">BI-DIRECTIONAL TRAVERSAL ACTIVE</Text>
+                            </HStack>
+                        </VStack>
                     </HStack>
-                    <Text fontSize="xs" color="slate.500" fontFamily="mono" tracking="widest">BI-DIRECTIONAL TRAVERSAL ENGINE</Text>
                 </VStack>
             </Box>
 
-            {/* Float UI: Discovery Chat Bot */}
+            {/* Sidebar Controls (V1 Parity) */}
+            <VStack position="absolute" top={10} right={10} spaceY={4} zIndex={10}>
+                <VStack bg={useColorModeValue('white/80', 'black/40')} p={2} rounded="2xl" border="1px solid" borderColor="border.subtle" backdropBlur="md" spaceY={2}>
+                    <Button variant="ghost" p={2} rounded="xl" h="10" w="10" color={useColorModeValue('nesso-dark', 'white')} _hover={{ bg: 'jungle-teal/20', color: 'jungle-teal' }}>
+                        <LuInfinity />
+                    </Button>
+                    <Button variant="ghost" p={2} rounded="xl" h="10" w="10" color={useColorModeValue('nesso-dark', 'white')} _hover={{ bg: 'jungle-teal/20', color: 'jungle-teal' }}>
+                        <LuZap />
+                    </Button>
+                </VStack>
+            </VStack>
+
+            {/* Discovery Chat Bot */}
             <VStack
+                ref={chatRef}
                 position="absolute"
                 bottom={10}
                 left={10}
                 w="450px"
-                p={6}
-                bg="black/60"
-                backdropBlur="xl"
-                rounded="3xl"
+                p={8}
+                bg={useColorModeValue('white/80', 'black/60')}
+                backdropBlur="30px"
+                rounded="4xl"
                 border="1px solid"
-                borderColor="jungle-teal/20"
+                borderColor="border.subtle"
                 shadow="2xl"
                 align="stretch"
-                spaceY={4}
+                spaceY={6}
             >
                 <HStack justifyContent="space-between">
-                    <HStack spaceX={2}>
-                        <Icon as={LuScanSearch} color="turf-green" />
-                        <Text fontSize="xs" fontWeight="bold" color="turf-green" tracking="widest">AI DISCOVERY</Text>
+                    <HStack spaceX={3}>
+                        <Icon as={LuScanSearch} color="turf-green" w={5} h={5} />
+                        <VStack align="start" spaceY={0}>
+                            <Text fontSize="xs" fontWeight="black" color="turf-green" letterSpacing="widest">AI DISCOVERY</Text>
+                            <Text fontSize="10px" color="slate.500">Nesso Intelligence Model</Text>
+                        </VStack>
                     </HStack>
-                    <Badge variant="outline" colorScheme="green" fontSize="9px">GEMINI 2.5</Badge>
+                    <Badge colorPalette="green" variant="subtle" fontSize="9px" rounded="md">GEMINI 2.5</Badge>
                 </HStack>
 
-                <Box h="150px" overflowY="auto" pr={2} spaceY={3}>
-                    <Box p={3} bg="white/5" rounded="2xl">
-                        <Text fontSize="xs" color="slate.400">System initialized. Ready for undirected RAG traversal. Ask about hidden mechanism connections.</Text>
+                <Box h="180px" overflowY="auto" pr={2} spaceY={4}>
+                    <Box p={4} bg="white/5" rounded="2xl" border="1px solid" borderColor="white/5">
+                        <Text fontSize="xs" color="slate.300" lineHeight="tall">
+                            Global Master Standards initialized. Symmetry integrity verified.
+                            <br /><br />
+                            Try: "What chemicals in Herb-A are associated with Disease-X?"
+                        </Text>
                     </Box>
                 </Box>
 
-                <HStack>
+                <HStack spaceX={3}>
                     <Input
-                        placeholder="Ask about relationships..."
-                        size="sm"
-                        rounded="xl"
+                        placeholder="Establish traversal query..."
+                        h="52px"
+                        rounded="2xl"
                         bg="white/5"
-                        border="none"
-                        _focus={{ bg: 'white/10' }}
+                        border="1px solid"
+                        borderColor="white/10"
+                        _focus={{ borderColor: 'jungle-teal', bg: 'white/10' }}
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
+                        fontSize="sm"
                     />
-                    <Button bg="jungle-teal" color="white" size="sm" rounded="xl" shadow="lg">
-                        <LuSend size="14px" />
+                    <Button bg="jungle-teal" color="white" w="52px" h="52px" rounded="2xl" shadow="lg" _hover={{ bg: 'turf-green' }}>
+                        <LuSend size="18px" />
                     </Button>
                 </HStack>
             </VStack>
 
-            {/* Legend Overlay */}
-            <Box position="absolute" bottom={10} right={10} p={4} bg="black/40" backdropBlur="md" rounded="2xl" border="1px solid white/10">
-                <VStack align="start" spaceY={2}>
-                    <HStack spaceX={3}>
-                        <Circle size="2" bg="jungle-teal" />
-                        <Text fontSize="10px" color="slate.300" tracking="wide">Directed Dependency</Text>
-                    </HStack>
-                    <HStack spaceX={3}>
-                        <Box w="12px" h="1px" bg="white/30" />
-                        <Text fontSize="10px" color="slate.300" tracking="wide">Symmetric Association</Text>
-                    </HStack>
-                </VStack>
-            </Box>
+            {/* Legend & Stats Overlay */}
+            <VStack position="absolute" bottom={10} right={10} align="end" spaceY={3}>
+                <Box p={5} bg={useColorModeValue('white/80', 'black/40')} backdropBlur="xl" rounded="2xl" border="1px solid" borderColor="border.subtle">
+                    <VStack align="start" spaceY={3}>
+                        <HStack spaceX={3}>
+                            <Circle size="2" bg="jungle-teal" />
+                            <Text fontSize="10px" color={useColorModeValue('slate.700', 'slate.300')} fontWeight="bold" letterSpacing="wide">Directed Dependency</Text>
+                        </HStack>
+                        <HStack spaceX={3}>
+                            <Box w="12px" h="1.5px" bg="turf-green" opacity="0.6" rounded="full" />
+                            <Text fontSize="10px" color={useColorModeValue('slate.700', 'slate.300')} fontWeight="bold" letterSpacing="wide">Symmetric Association</Text>
+                        </HStack>
+                        <HStack spaceX={3}>
+                            <Box w="12px" h="1.5px" bg="turf-green-3" rounded="full" />
+                            <Text fontSize="10px" color={useColorModeValue('slate.700', 'slate.300')} fontWeight="bold" letterSpacing="wide">Scientific Label</Text>
+                        </HStack>
+                    </VStack>
+                </Box>
+            </VStack>
         </Flex>
     );
 };
