@@ -20,18 +20,28 @@ interface GraphData {
     links: Link[];
 }
 
-export const NexusGraph = ({ data }: { data: GraphData }) => {
+export const NexusGraph = ({ data, layoutMode = 'network' }: { data: GraphData, layoutMode?: 'network' | 'tree' | 'radial' }) => {
     const fgRef = useRef<any>(null);
 
+    const dagModeMap: Record<string, any> = {
+        'network': null,
+        'tree': 'td',
+        'radial': 'radialout'
+    };
+
     return (
-        <div className="w-full h-[600px] rounded-3xl overflow-hidden border border-jungle-teal/30 shadow-2xl bg-black/20 backdrop-blur-sm">
+        <div className="w-full h-full overflow-hidden">
             <ForceGraph3D
                 ref={fgRef}
                 graphData={data}
+                dagMode={dagModeMap[layoutMode]}
+                dagLevelDistance={100}
                 nodeLabel="id"
                 nodeAutoColorBy="label"
+                // Important for responsiveness
+                width={window.innerWidth - 280} // Approx sidebar width, but better to use a ResizeObserver or let it auto-size if possible
+                height={window.innerHeight}
                 // Global standard: Conditional arrows
-                // Arrows are only rendered if the relationship is NOT symmetric
                 linkDirectionalArrowLength={(link: any) => link.isSymmetric ? 0 : 3.5}
                 linkDirectionalArrowRelPos={1}
                 linkCurvature={0.1}

@@ -1,7 +1,7 @@
 import { Box, Flex, VStack, HStack, Heading, Text, Icon } from '@chakra-ui/react';
 import { NavLink } from 'react-router-dom';
 import { ColorModeButton, useColorModeValue } from '@/components/ui/color-mode';
-import { LuLayoutDashboard, LuLibrary, LuDatabase, LuLogOut, LuTelescope } from 'react-icons/lu';
+import { LuLayoutDashboard, LuLibrary, LuLogOut, LuTelescope, LuMessageSquare, LuCpu, LuUser, LuUpload, LuNetwork } from 'react-icons/lu';
 import logoImg from '@/assets/nesso___nr_group_logo.jpeg';
 
 interface SidebarItemProps {
@@ -21,7 +21,7 @@ const SidebarItem = ({ icon, label, to }: SidebarItemProps) => {
                     p={3}
                     rounded="xl"
                     bg={isActive ? activeBg : 'transparent'}
-                    color={isActive ? activeColor : 'slate.400'}
+                    color={isActive ? activeColor : 'gray.400'}
                     _hover={{ bg: activeBg, color: activeColor }}
                     transition="all 0.2s"
                     cursor="pointer"
@@ -40,7 +40,7 @@ export const Shell = ({ children, userEmail }: { children: React.ReactNode, user
     const bgCanvas = useColorModeValue('white', 'bg.canvas');
     const bgSidebar = useColorModeValue('gray.50', 'bg.surface');
     const borderColor = useColorModeValue('gray.100', 'border.subtle');
-    const textColor = useColorModeValue('slate.900', 'white');
+    const textColor = useColorModeValue('gray.900', 'white');
 
     return (
         <Box minH="100vh" bg={bgCanvas} color={textColor}>
@@ -75,8 +75,21 @@ export const Shell = ({ children, userEmail }: { children: React.ReactNode, user
                         <VStack align="stretch" spaceY={1}>
                             <SidebarItem icon={LuLayoutDashboard} label="Dashboard" to="/" />
                             <SidebarItem icon={LuLibrary} label="Knowledge Library" to="/library" />
-                            <SidebarItem icon={LuTelescope} label="Graph Discovery" to="/discovery" />
-                            <SidebarItem icon={LuDatabase} label="System Health" to="/health" />
+                            <SidebarItem icon={LuUpload} label="Upload Data" to="/upload" />
+
+                            {/* Graph Discovery Group */}
+                            <VStack align="stretch" spaceY={1} pt={4} borderTop="1px solid" borderColor={borderColor}>
+                                <Text fontSize="10px" fontWeight="black" color="jungle-teal" letterSpacing="widest" px={3}>DISCOVERY VIEWS</Text>
+                                <SidebarItem icon={LuNetwork} label="3D Network" to="/discovery" />
+                                <SidebarItem icon={LuTelescope} label="Hierarchy Tree" to="/discovery/tree" />
+                                <SidebarItem icon={LuTelescope} label="Radial Burst" to="/discovery/radial" />
+                            </VStack>
+
+                            <Box pt={4} borderTop="1px solid" borderColor={borderColor}>
+                                <SidebarItem icon={LuMessageSquare} label="Chat Services" to="/chat" />
+                                <SidebarItem icon={LuCpu} label="Algorithms" to="/algorithms" />
+                                <SidebarItem icon={LuUser} label="Profile" to="/profile" />
+                            </Box>
                         </VStack>
                     </VStack>
 
@@ -84,7 +97,7 @@ export const Shell = ({ children, userEmail }: { children: React.ReactNode, user
                         <HStack justifyContent="space-between" p={2} borderTop="1px solid" borderColor={borderColor} pt={6}>
                             <VStack align="start" spaceY={0}>
                                 <Text fontSize="10px" fontWeight="black" color="jungle-teal" letterSpacing="widest">RESEARCHER</Text>
-                                <Text fontSize="xs" fontWeight="bold" color="slate.500" truncate maxW="150px">{userEmail}</Text>
+                                <Text fontSize="xs" fontWeight="bold" color="gray.500" truncate maxW="150px">{userEmail}</Text>
                             </VStack>
                             <HStack spaceX={2}>
                                 <ColorModeButton />

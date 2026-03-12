@@ -22,12 +22,24 @@ export const system = createSystem(defaultConfig, {
                 "turf-green-3": { value: "{colors.nesso.green3}" },
                 "nesso-white": { value: "{colors.nesso.white}" },
                 "nesso-dark": { value: "{colors.nesso.dark}" },
+                slate: {
+                    50: { value: "{colors.gray.50}" },
+                    100: { value: "{colors.gray.100}" },
+                    200: { value: "{colors.gray.200}" },
+                    300: { value: "{colors.gray.300}" },
+                    400: { value: "{colors.gray.400}" },
+                    500: { value: "{colors.gray.500}" },
+                    600: { value: "{colors.gray.600}" },
+                    700: { value: "{colors.gray.700}" },
+                    800: { value: "{colors.gray.800}" },
+                    900: { value: "{colors.gray.900}" },
+                },
                 bg: {
                     canvas: {
-                        value: { _light: "{colors.nesso.white}", _dark: "#040706" }
+                        value: { _light: "#F9FAFB", _dark: "#040706" }
                     },
                     surface: {
-                        value: { _light: "{colors.nesso.white}", _dark: "#080C0B" }
+                        value: { _light: "#FFFFFF", _dark: "#080C0B" }
                     },
                     subtle: {
                         value: { _light: "gray.50", _dark: "whiteAlpha.50" }

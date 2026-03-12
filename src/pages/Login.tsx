@@ -2,11 +2,15 @@ import { Box, Heading, Text, VStack, HStack, Circle, Input, Button, Image } from
 import { useState, useRef, useEffect } from 'react';
 import { useColorModeValue } from '@/components/ui/color-mode';
 import logoImg from '@/assets/nesso___nr_group_logo.jpeg';
+import { nexusApi } from '@/services/api';
 import gsap from 'gsap';
 
 export const Login = ({ onLogin }: { onLogin: (email: string) => void }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [fullName, setFullName] = useState('');
+    const [isRegister, setIsRegister] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const loginRef = useRef(null);
 
     useEffect(() => {
@@ -16,11 +20,28 @@ export const Login = ({ onLogin }: { onLogin: (email: string) => void }) => {
             duration: 1.2,
             ease: 'power4.out'
         });
-    }, []);
+    }, [isRegister]);
 
-    const handleLogin = () => {
-        if (email && password) {
-            onLogin(email);
+    const handleAction = async () => {
+        if (!email || !password || (isRegister && !fullName)) return;
+
+        setIsLoading(true);
+        try {
+            if (isRegister) {
+                await nexusApi.register({ email, password, full_name: fullName, role: 'RESEARCHER' });
+                onLogin(email);
+            } else {
+                const formData = new FormData();
+                formData.append('username', email); // FastAPI OAuth2 uses 'username' field
+                formData.append('password', password);
+                await nexusApi.login(formData);
+                onLogin(email);
+            }
+        } catch (error: any) {
+            console.error("Auth error:", error);
+            alert(error.response?.data?.detail || "Authentication failed");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -58,12 +79,28 @@ export const Login = ({ onLogin }: { onLogin: (email: string) => void }) => {
                         <Image src={logoImg} alt="Nesso Logo" w="full" h="full" objectFit="contain" />
                     </Box>
                     <VStack spaceY={1} textAlign="center">
-                        <Heading size="2xl" letterSpacing="tight" fontWeight="black" lineHeight="1" color={useColorModeValue('slate.900', 'white')}>Neural Nexus</Heading>
-                        <Text fontSize="10px" fontWeight="black" color="jungle-teal" letterSpacing="widest">V2 // GLOBAL SYSTEM</Text>
+                        <Heading size="2xl" letterSpacing="tight" fontWeight="black" lineHeight="1" color={useColorModeValue('gray.900', 'white')}>Neural Nexus</Heading>
+                        <Text fontSize="10px" fontWeight="black" color="jungle-teal" letterSpacing="widest">V2 // {isRegister ? 'SYSTEM REGISTRATION' : 'GLOBAL ACCESS'}</Text>
                     </VStack>
                 </VStack>
 
                 <VStack w="full" spaceY={4}>
+                    {isRegister && (
+                        <VStack align="start" w="full" spaceY={1}>
+                            <Text fontSize="10px" fontWeight="black" color="jungle-teal" ml={1} opacity={0.8} letterSpacing="widest">SCIENTIST NAME</Text>
+                            <Input
+                                placeholder="Full Name"
+                                value={fullName}
+                                onChange={(e) => setFullName(e.target.value)}
+                                rounded="2xl"
+                                p={6}
+                                bg={useColorModeValue('gray.50', 'white/5')}
+                                border="1px solid"
+                                borderColor={useColorModeValue('gray.200', 'white/10')}
+                            />
+                        </VStack>
+                    )}
+
                     <VStack align="start" w="full" spaceY={1}>
                         <Text fontSize="10px" fontWeight="black" color="jungle-teal" ml={1} opacity={0.8} letterSpacing="widest">SCIENTIFIC IDENTITY</Text>
                         <Input
@@ -75,9 +112,6 @@ export const Login = ({ onLogin }: { onLogin: (email: string) => void }) => {
                             bg={useColorModeValue('gray.50', 'white/5')}
                             border="1px solid"
                             borderColor={useColorModeValue('gray.200', 'white/10')}
-                            color={useColorModeValue('slate.900', 'white')}
-                            _placeholder={{ color: useColorModeValue('slate.400', 'white/30') }}
-                            _focus={{ borderColor: 'jungle-teal', bg: useColorModeValue('white', 'white/10'), shadow: '0 0 15px -5px rgba(81, 142, 109, 0.3)' }}
                         />
                     </VStack>
 
@@ -93,9 +127,6 @@ export const Login = ({ onLogin }: { onLogin: (email: string) => void }) => {
                             bg={useColorModeValue('gray.50', 'white/5')}
                             border="1px solid"
                             borderColor={useColorModeValue('gray.200', 'white/10')}
-                            color={useColorModeValue('slate.900', 'white')}
-                            _placeholder={{ color: useColorModeValue('slate.400', 'white/30') }}
-                            _focus={{ borderColor: 'jungle-teal', bg: useColorModeValue('white', 'white/10'), shadow: '0 0 15px -5px rgba(81, 142, 109, 0.3)' }}
                         />
                     </VStack>
 
@@ -110,21 +141,19 @@ export const Login = ({ onLogin }: { onLogin: (email: string) => void }) => {
                         }}
                         color="white"
                         rounded="2xl"
-                        onClick={handleLogin}
-                        _active={{ transform: 'scale(0.98)' }}
-                        transition="all 0.3s"
-                        fontWeight="black"
-                        fontSize="md"
+                        onClick={handleAction}
+                        loading={isLoading}
                         mt={4}
-                        boxShadow="0 10px 20px -10px rgba(0,0,0,0.5)"
                     >
-                        ESTABLISH CONNECTION
+                        {isRegister ? 'ESTABLISH IDENTITY' : 'ESTABLISH CONNECTION'}
                     </Button>
                 </VStack>
 
                 <HStack w="full" justifyContent="center" spaceX={2}>
-                    <Text fontSize="xs" color="slate.600">New researcher?</Text>
-                    <Button variant="plain" color="jungle-teal" fontSize="xs" fontWeight="bold">Request Auth</Button>
+                    <Text fontSize="xs" color="gray.600">{isRegister ? 'Already registered?' : 'New researcher?'}</Text>
+                    <Button variant="plain" color="jungle-teal" fontSize="xs" fontWeight="bold" onClick={() => setIsRegister(!isRegister)}>
+                        {isRegister ? 'Access Portal' : 'Request Auth'}
+                    </Button>
                 </HStack>
             </VStack>
         </Box>
