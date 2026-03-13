@@ -1,10 +1,10 @@
 import { Box, Heading, Text, VStack, HStack, Circle, Input, Button, Image } from '@chakra-ui/react';
 import { useState, useRef, useEffect } from 'react';
-import { useColorModeValue } from '@/components/ui/color-mode';
 import logoImg from '@/assets/nesso___nr_group_logo.jpeg';
 import { nexusApi } from '@/services/api';
 import gsap from 'gsap';
 
+// Premium Auth Portal for Neural Nexus v2
 export const Login = ({ onLogin }: { onLogin: (email: string) => void }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -14,12 +14,36 @@ export const Login = ({ onLogin }: { onLogin: (email: string) => void }) => {
     const loginRef = useRef(null);
 
     useEffect(() => {
-        gsap.from(loginRef.current, {
-            opacity: 0,
-            y: 30,
-            duration: 1.2,
-            ease: 'power4.out'
+        const ctx = gsap.context(() => {
+            // Card entrance
+            gsap.from(loginRef.current, {
+                opacity: 0,
+                y: 30,
+                scale: 0.95,
+                duration: 1.2,
+                clearProps: "all",
+                ease: 'expo.out'
+            });
+
+            // Ambient background animation
+            gsap.to(".ambient-circle-1", {
+                x: "15%",
+                y: "10%",
+                duration: 8,
+                repeat: -1,
+                yoyo: true,
+                ease: "sine.inOut"
+            });
+            gsap.to(".ambient-circle-2", {
+                x: "-10%",
+                y: "-15%",
+                duration: 10,
+                repeat: -1,
+                yoyo: true,
+                ease: "sine.inOut"
+            });
         });
+        return () => ctx.revert();
     }, [isRegister]);
 
     const handleAction = async () => {
@@ -28,13 +52,10 @@ export const Login = ({ onLogin }: { onLogin: (email: string) => void }) => {
         setIsLoading(true);
         try {
             if (isRegister) {
-                await nexusApi.register({ email, password, full_name: fullName, role: 'RESEARCHER' });
+                await nexusApi.register(email, password, fullName);
                 onLogin(email);
             } else {
-                const formData = new FormData();
-                formData.append('username', email); // FastAPI OAuth2 uses 'username' field
-                formData.append('password', password);
-                await nexusApi.login(formData);
+                await nexusApi.login(email, password);
                 onLogin(email);
             }
         } catch (error: any) {
@@ -45,27 +66,32 @@ export const Login = ({ onLogin }: { onLogin: (email: string) => void }) => {
         }
     };
 
+    const inputBg = "bg.muted";
+    const borderColor = "border.subtle";
+
     return (
         <Box minH="100vh" bg="bg.canvas" display="flex" alignItems="center" justifyContent="center" position="relative" overflow="hidden">
-            {/* Background Decorative Blurs */}
-            <Circle size="500px" bg="jungle-teal" opacity={useColorModeValue('0.1', '0.05')} blur="120px" position="absolute" top="-150px" left="-150px" />
-            <Circle size="500px" bg="turf-green" opacity={useColorModeValue('0.1', '0.05')} blur="120px" position="absolute" bottom="-150px" right="-150px" />
+            {/* Background Decorative Blurs - Animated */}
+            <Box position="absolute" inset={0} pointerEvents="none" zIndex={0}>
+                <Circle className="ambient-circle-1" size="600px" bg="jungle-teal" opacity="0.12" blur="150px" position="absolute" top="-10%" left="10%" />
+                <Circle className="ambient-circle-2" size="500px" bg="turf-green" opacity="0.1" blur="130px" position="absolute" bottom="-5%" right="5%" />
+            </Box>
 
             <VStack
                 ref={loginRef}
-                spaceY={8}
+                gap={8}
                 w="440px"
                 p={12}
-                bg={useColorModeValue('white', 'bg.surface')}
-                backdropBlur="30px"
+                bg="bg.surface"
+                backdropFilter="blur(20px) saturate(180%)"
                 rounded="4xl"
                 border="1px solid"
-                borderColor="border.subtle"
-                shadow={useColorModeValue('0 25px 50px -12px rgba(81, 142, 109, 0.1)', '0 25px 50px -12px rgba(0, 0, 0, 0.7)')}
+                borderColor={borderColor}
+                shadow="0 40px 100px -20px rgba(0, 0, 0, 0.5)"
                 position="relative"
                 zIndex={1}
             >
-                <VStack spaceY={4} mb={4}>
+                <VStack gap={4} mb={4}>
                     <Box
                         w="80px" h="80px"
                         rounded="2xl"
@@ -78,45 +104,49 @@ export const Login = ({ onLogin }: { onLogin: (email: string) => void }) => {
                     >
                         <Image src={logoImg} alt="Nesso Logo" w="full" h="full" objectFit="contain" />
                     </Box>
-                    <VStack spaceY={1} textAlign="center">
-                        <Heading size="2xl" letterSpacing="tight" fontWeight="black" lineHeight="1" color={useColorModeValue('gray.900', 'white')}>Neural Nexus</Heading>
+                    <VStack gap={1} textAlign="center">
+                        <Heading size="2xl" letterSpacing="tight" fontWeight="black" lineHeight="1" color="fg">Neural Nexus</Heading>
                         <Text fontSize="10px" fontWeight="black" color="jungle-teal" letterSpacing="widest">V2 // {isRegister ? 'SYSTEM REGISTRATION' : 'GLOBAL ACCESS'}</Text>
                     </VStack>
                 </VStack>
 
-                <VStack w="full" spaceY={4}>
+                <VStack w="full" gap={4}>
                     {isRegister && (
-                        <VStack align="start" w="full" spaceY={1}>
-                            <Text fontSize="10px" fontWeight="black" color="jungle-teal" ml={1} opacity={0.8} letterSpacing="widest">SCIENTIST NAME</Text>
+                        <VStack align="start" w="full" gap={1}>
+                            <Text fontSize="10px" fontWeight="black" color="jungle-teal" ml={1} letterSpacing="widest">SCIENTIST NAME</Text>
                             <Input
                                 placeholder="Full Name"
                                 value={fullName}
                                 onChange={(e) => setFullName(e.target.value)}
                                 rounded="2xl"
                                 p={6}
-                                bg={useColorModeValue('gray.50', 'white/5')}
+                                bg={inputBg}
                                 border="1px solid"
-                                borderColor={useColorModeValue('gray.200', 'white/10')}
+                                borderColor={borderColor}
+                                color="fg"
+                                _placeholder={{ color: "fg.muted" }}
                             />
                         </VStack>
                     )}
 
-                    <VStack align="start" w="full" spaceY={1}>
-                        <Text fontSize="10px" fontWeight="black" color="jungle-teal" ml={1} opacity={0.8} letterSpacing="widest">SCIENTIFIC IDENTITY</Text>
+                    <VStack align="start" w="full" gap={1}>
+                        <Text fontSize="10px" fontWeight="black" color="jungle-teal" ml={1} letterSpacing="widest">SCIENTIFIC IDENTITY</Text>
                         <Input
                             placeholder="Email address"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             rounded="2xl"
                             p={6}
-                            bg={useColorModeValue('gray.50', 'white/5')}
+                            bg={inputBg}
                             border="1px solid"
-                            borderColor={useColorModeValue('gray.200', 'white/10')}
+                            borderColor={borderColor}
+                            color="fg"
+                            _placeholder={{ color: "fg.muted" }}
                         />
                     </VStack>
 
-                    <VStack align="start" w="full" spaceY={1}>
-                        <Text fontSize="10px" fontWeight="black" color="jungle-teal" ml={1} opacity={0.8} letterSpacing="widest">ACCESS KEY</Text>
+                    <VStack align="start" w="full" gap={1}>
+                        <Text fontSize="10px" fontWeight="black" color="jungle-teal" ml={1} letterSpacing="widest">ACCESS KEY</Text>
                         <Input
                             type="password"
                             placeholder="••••••••"
@@ -124,9 +154,11 @@ export const Login = ({ onLogin }: { onLogin: (email: string) => void }) => {
                             onChange={(e) => setPassword(e.target.value)}
                             rounded="2xl"
                             p={6}
-                            bg={useColorModeValue('gray.50', 'white/5')}
+                            bg={inputBg}
                             border="1px solid"
-                            borderColor={useColorModeValue('gray.200', 'white/10')}
+                            borderColor={borderColor}
+                            color="fg"
+                            _placeholder={{ color: "fg.muted" }}
                         />
                     </VStack>
 
@@ -140,6 +172,8 @@ export const Login = ({ onLogin }: { onLogin: (email: string) => void }) => {
                             transform: 'translateY(-2px)'
                         }}
                         color="white"
+                        fontWeight="black"
+                        letterSpacing="widest"
                         rounded="2xl"
                         onClick={handleAction}
                         loading={isLoading}
@@ -149,8 +183,8 @@ export const Login = ({ onLogin }: { onLogin: (email: string) => void }) => {
                     </Button>
                 </VStack>
 
-                <HStack w="full" justifyContent="center" spaceX={2}>
-                    <Text fontSize="xs" color="gray.600">{isRegister ? 'Already registered?' : 'New researcher?'}</Text>
+                <HStack w="full" justifyContent="center" gap={2}>
+                    <Text fontSize="xs" color="fg.muted">{isRegister ? 'Already registered?' : 'New researcher?'}</Text>
                     <Button variant="plain" color="jungle-teal" fontSize="xs" fontWeight="bold" onClick={() => setIsRegister(!isRegister)}>
                         {isRegister ? 'Access Portal' : 'Request Auth'}
                     </Button>

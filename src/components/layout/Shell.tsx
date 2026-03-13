@@ -1,35 +1,93 @@
-import { Box, Flex, VStack, HStack, Heading, Text, Icon } from '@chakra-ui/react';
+import { Box, Flex, VStack, HStack, Heading, Text, Icon, IconButton, Circle } from '@chakra-ui/react';
 import { NavLink } from 'react-router-dom';
-import { ColorModeButton, useColorModeValue } from '@/components/ui/color-mode';
-import { LuLayoutDashboard, LuLibrary, LuLogOut, LuTelescope, LuMessageSquare, LuCpu, LuUser, LuUpload, LuNetwork } from 'react-icons/lu';
+import { ColorModeButton } from '@/components/ui/color-mode';
+import { CommandPalette } from '@/components/ui/CommandPalette';
+import { 
+    LuChevronLeft, 
+    LuChevronRight, 
+    LuLayoutDashboard, 
+    LuSearch, 
+    LuDatabase, 
+    LuMessageSquare, 
+    LuSettings, 
+    LuLogOut, 
+    LuUser,
+    LuActivity
+} from 'react-icons/lu';
+import { useState, useRef, useEffect } from 'react';
+import gsap from 'gsap';
 import logoImg from '@/assets/nesso___nr_group_logo.jpeg';
 
 interface SidebarItemProps {
     icon: any;
     label: string;
     to: string;
+    isCollapsed: boolean;
 }
 
-const SidebarItem = ({ icon, label, to }: SidebarItemProps) => {
-    const activeBg = useColorModeValue('jungle-teal/10', 'jungle-teal/20');
-    const activeColor = 'jungle-teal';
+const SidebarItem = ({ icon, label, to, isCollapsed }: SidebarItemProps) => {
+    const activeColor = "turf-green";
+    const labelRef = useRef<HTMLDivElement>(null);
+    const itemRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (labelRef.current) {
+            gsap.to(labelRef.current, {
+                opacity: isCollapsed ? 0 : 1,
+                x: isCollapsed ? -10 : 0,
+                display: isCollapsed ? 'none' : 'block',
+                duration: 0.3,
+                ease: "power2.inOut"
+            });
+        }
+    }, [isCollapsed]);
+
+    const handleMouseEnter = () => {
+        gsap.to(itemRef.current, { x: 4, duration: 0.2, ease: "power2.out" });
+    };
+
+    const handleMouseLeave = () => {
+        gsap.to(itemRef.current, { x: 0, duration: 0.2, ease: "power2.in" });
+    };
 
     return (
         <NavLink to={to}>
             {({ isActive }) => (
                 <HStack
+                    ref={itemRef}
                     p={3}
                     rounded="xl"
-                    bg={isActive ? activeBg : 'transparent'}
-                    color={isActive ? activeColor : 'gray.400'}
-                    _hover={{ bg: activeBg, color: activeColor }}
-                    transition="all 0.2s"
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                    _hover={{ 
+                        color: activeColor,
+                        bg: "bg.muted"
+                    }}
+                    transition="background 0.3s"
                     cursor="pointer"
                     w="full"
-                    spaceX={3}
+                    gap={isCollapsed ? 0 : 3}
+                    justifyContent={isCollapsed ? "center" : "flex-start"}
+                    position="relative"
+                    color={isActive ? activeColor : "fg.muted"}
                 >
-                    <Icon as={icon} size="sm" />
-                    <Text fontSize="sm" fontWeight={isActive ? 'bold' : 'medium'}>{label}</Text>
+                    {isActive && (
+                        <Box
+                            position="absolute"
+                            left="-12px"
+                            w="4px"
+                            h="24px"
+                            bg="turf-green"
+                            roundedRight="full"
+                            shadow="0 0 15px var(--chakra-colors-turf-green)"
+                        />
+                    )}
+                    <Box className="icon-wrapper">
+                        <Icon as={icon} size="sm" />
+                    </Box>
+                    <Box ref={labelRef} flex={1} overflow="hidden">
+                        <Text fontSize="sm" fontWeight={isActive ? 'black' : 'bold'} whiteSpace="nowrap">{label}</Text>
+                    </Box>
                 </HStack>
             )}
         </NavLink>
@@ -37,78 +95,144 @@ const SidebarItem = ({ icon, label, to }: SidebarItemProps) => {
 };
 
 export const Shell = ({ children, userEmail }: { children: React.ReactNode, userEmail: string }) => {
-    const bgCanvas = useColorModeValue('white', 'bg.canvas');
-    const bgSidebar = useColorModeValue('gray.50', 'bg.surface');
-    const borderColor = useColorModeValue('gray.100', 'border.subtle');
-    const textColor = useColorModeValue('gray.900', 'white');
+    const [isCollapsed, setIsCollapsed] = useState(false);
+    const sidebarRef = useRef<HTMLDivElement>(null);
+    const contentRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (sidebarRef.current) {
+            gsap.to(sidebarRef.current, {
+                width: isCollapsed ? "80px" : "280px",
+                duration: 0.5,
+                ease: "expo.inOut"
+            });
+        }
+    }, [isCollapsed]);
+
+    // Entrance Animation
+    useEffect(() => {
+        if (contentRef.current) {
+            gsap.fromTo(contentRef.current, 
+                { opacity: 0, y: 20 },
+                { 
+                    opacity: 1, 
+                    y: 0, 
+                    duration: 0.8, 
+                    ease: "power3.out", 
+                    delay: 0.2,
+                    clearProps: "opacity,transform"
+                }
+            );
+        }
+    }, []);
+
+    const navItems = [
+        { icon: LuLayoutDashboard, label: 'Overview', path: '/dashboard' },
+        { icon: LuSearch, label: 'Discovery', path: '/discovery' },
+        { icon: LuActivity, label: 'Analytics', path: '/analytics' },
+        { icon: LuDatabase, label: 'Library', path: '/library' },
+        { icon: LuSettings, label: 'Settings', path: '/settings' },
+        { icon: LuMessageSquare, label: 'Nexus AI', path: '/chat' },
+    ];
 
     return (
-        <Box minH="100vh" bg={bgCanvas} color={textColor}>
+        <Box minH="100vh" bg="bg.canvas" color="fg" overflow="hidden">
             <Flex h="100vh" overflow="hidden">
                 {/* Sidebar */}
                 <VStack
-                    w="280px"
-                    borderRight="1px"
-                    borderColor={borderColor}
-                    p={6}
+                    ref={sidebarRef}
+                    w={isCollapsed ? "80px" : "280px"}
+                    h="100vh"
+                    borderRight="1px solid"
+                    borderColor="border.subtle"
+                    p={isCollapsed ? 4 : 6}
                     align="stretch"
-                    justifyContent="space-between"
-                    bg={bgSidebar}
+                    bg="bg.surface"
+                    zIndex={20}
+                    position="relative"
                 >
-                    <VStack align="stretch" spaceY={8}>
-                        <HStack spaceX={3} mb={6}>
-                            <Box
-                                w="45px" h="45px"
-                                rounded="lg"
-                                overflow="hidden"
-                                shadow="lg"
-                                bg="white"
-                            >
-                                <img src={logoImg} alt="Nesso Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                            </Box>
-                            <VStack align="start" spaceY={0}>
-                                <Heading size="md" letterSpacing="tight" lineHeight="1">Neural Nexus</Heading>
-                                <Text fontSize="10px" fontWeight="black" color="turf-green" letterSpacing="widest">V2 // NESSO PLATFORM</Text>
-                            </VStack>
+                    <VStack align="stretch" spaceY={8} h="full">
+                        {/* Logo */}
+                        <HStack justifyContent={isCollapsed ? "center" : "space-between"}>
+                            <HStack spaceX={3}>
+                                <Box w="40px" h="40px" rounded="xl" overflow="hidden" shadow="2xl" border="1px solid" borderColor="border.subtle">
+                                    <img src={logoImg} alt="Nesso Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                </Box>
+                                {!isCollapsed && (
+                                    <VStack align="start" spaceY={0}>
+                                        <Heading size="md" letterSpacing="tight" fontWeight="black" color="fg">NEXUS</Heading>
+                                        <Text fontSize="10px" fontWeight="black" color="turf-green" letterSpacing="widest">V2 CORE</Text>
+                                    </VStack>
+                                )}
+                            </HStack>
                         </HStack>
 
-                        <VStack align="stretch" spaceY={1}>
-                            <SidebarItem icon={LuLayoutDashboard} label="Dashboard" to="/" />
-                            <SidebarItem icon={LuLibrary} label="Knowledge Library" to="/library" />
-                            <SidebarItem icon={LuUpload} label="Upload Data" to="/upload" />
+                        {/* Navigation */}
+                        <VStack align="stretch" spaceY={1} flex={1}>
+                            {navItems.map((item, index) => (
+                                <SidebarItem 
+                                    key={index} 
+                                    icon={item.icon} 
+                                    label={item.label} 
+                                    to={item.path} 
+                                    isCollapsed={isCollapsed} 
+                                />
+                            ))}
+                        </VStack>
 
-                            {/* Graph Discovery Group */}
-                            <VStack align="stretch" spaceY={1} pt={4} borderTop="1px solid" borderColor={borderColor}>
-                                <Text fontSize="10px" fontWeight="black" color="jungle-teal" letterSpacing="widest" px={3}>DISCOVERY VIEWS</Text>
-                                <SidebarItem icon={LuNetwork} label="3D Network" to="/discovery" />
-                                <SidebarItem icon={LuTelescope} label="Hierarchy Tree" to="/discovery/tree" />
-                                <SidebarItem icon={LuTelescope} label="Radial Burst" to="/discovery/radial" />
-                            </VStack>
-
-                            <Box pt={4} borderTop="1px solid" borderColor={borderColor}>
-                                <SidebarItem icon={LuMessageSquare} label="Chat Services" to="/chat" />
-                                <SidebarItem icon={LuCpu} label="Algorithms" to="/algorithms" />
-                                <SidebarItem icon={LuUser} label="Profile" to="/profile" />
-                            </Box>
+                        {/* Bottom Actions */}
+                        <VStack pt={6} borderTop="1px solid" borderColor="border.muted" spaceY={4}>
+                            <HStack w="full" justifyContent={isCollapsed ? "center" : "space-between"}>
+                                <ColorModeButton />
+                                {!isCollapsed && <SidebarItem icon={LuLogOut} label="Logout" to="/logout" isCollapsed={isCollapsed} />}
+                            </HStack>
+                            {!isCollapsed && (
+                                <HStack p={2} bg="bg.muted" rounded="xl" w="full" spaceX={3}>
+                                    <Circle size="8" bg="turf-green" shadow="premium">
+                                        <LuUser color="white" size="14px" />
+                                    </Circle>
+                                    <VStack align="start" spaceY={0} overflow="hidden">
+                                        <Text fontSize="xs" fontWeight="black" color="fg" truncate>{userEmail.split('@')[0]}</Text>
+                                        <Text fontSize="9px" color="fg.muted" truncate>{userEmail}</Text>
+                                    </VStack>
+                                </HStack>
+                            )}
                         </VStack>
                     </VStack>
 
-                    <VStack align="stretch" spaceY={4}>
-                        <HStack justifyContent="space-between" p={2} borderTop="1px solid" borderColor={borderColor} pt={6}>
-                            <VStack align="start" spaceY={0}>
-                                <Text fontSize="10px" fontWeight="black" color="jungle-teal" letterSpacing="widest">RESEARCHER</Text>
-                                <Text fontSize="xs" fontWeight="bold" color="gray.500" truncate maxW="150px">{userEmail}</Text>
-                            </VStack>
-                            <HStack spaceX={2}>
-                                <ColorModeButton />
-                                <SidebarItem icon={LuLogOut} label="" to="/logout" />
-                            </HStack>
-                        </HStack>
-                    </VStack>
+                    <IconButton
+                        aria-label="Toggle"
+                        size="xs"
+                        variant="solid"
+                        bg="bg.surface"
+                        color="fg"
+                        border="1px solid"
+                        borderColor="border.subtle"
+                        position="absolute"
+                        right="-14px"
+                        top="48px"
+                        rounded="full"
+                        onClick={() => setIsCollapsed(!isCollapsed)}
+                        shadow="premium"
+                        _hover={{ bg: "turf-green", color: "white" }}
+                        zIndex={30}
+                    >
+                        {isCollapsed ? <LuChevronRight /> : <LuChevronLeft />}
+                    </IconButton>
                 </VStack>
 
-                {/* Main Content Area */}
-                <Box flex={1} overflowY="auto" position="relative">
+                {/* Main Content */}
+                <Box 
+                    ref={contentRef} 
+                    flex={1} 
+                    h="100%"
+                    display="flex"
+                    flexDirection="column"
+                    overflow="hidden" 
+                    bg="bg.canvas" 
+                    position="relative"
+                >
+                    <CommandPalette />
                     {children}
                 </Box>
             </Flex>

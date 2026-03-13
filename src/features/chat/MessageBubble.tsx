@@ -21,25 +21,26 @@ export const MessageBubble = ({ role, content, timestamp, confidence, engine }: 
                 <Box
                     p={4}
                     pb={3}
-                    bg={role === 'user' ? 'jungle-teal' : 'white/5'}
-                    color={role === 'user' ? 'white' : 'inherit'}
+                    bg={role === 'user' ? 'jungle-teal' : 'bg.muted'}
+                    color={role === 'user' ? 'white' : 'fg'}
                     rounded="2xl"
                     roundedTopRight={role === 'user' ? '4px' : '2xl'}
                     roundedTopLeft={role === 'assistant' ? '4px' : '2xl'}
                     border="1px solid"
-                    borderColor={role === 'user' ? 'jungle-teal' : 'white/10'}
+                    borderColor={role === 'user' ? 'jungle-teal' : 'border.subtle'}
+                    shadow="sm"
                 >
-                    <Text fontSize="sm" lineHeight="tall" whiteSpace="pre-wrap">{content}</Text>
+                    <Text fontSize="sm" lineHeight="tall" whiteSpace="pre-wrap" fontWeight="medium">{content}</Text>
                     <HStack justifyContent="flex-end" mt={2} opacity={0.6}>
-                        {timestamp && <Text fontSize="9px" fontWeight="bold">{timestamp}</Text>}
+                        {timestamp && <Text fontSize="9px" fontWeight="black" color={role === 'user' ? 'white/80' : 'fg.muted'}>{timestamp}</Text>}
                         {role === 'assistant' && confidence !== undefined && (
-                            <Badge variant="subtle" colorPalette="green" fontSize="8px">
+                            <Badge variant="solid" bg="jungle-teal" color="white" fontSize="8px" fontWeight="black">
                                 {Math.round(confidence * 100)}% RELIABLE
                             </Badge>
                         )}
                         {role === 'assistant' && engine && (
-                            <Badge variant="outline" colorPalette="blue" fontSize="8px">
-                                {engine} ENGINE
+                            <Badge variant="outline" borderColor="jungle-teal/30" color="jungle-teal" fontSize="8px" fontWeight="black">
+                                {engine.toUpperCase()} ENGINE
                             </Badge>
                         )}
                     </HStack>
@@ -47,7 +48,7 @@ export const MessageBubble = ({ role, content, timestamp, confidence, engine }: 
             </VStack>
             {role === 'user' && (
                 <Avatar.Root size="xs">
-                    <Avatar.Fallback name="ME" bg="gray.700" color="white" fontSize="10px" />
+                    <Avatar.Fallback name="ME" bg="jungle-teal" color="white" fontSize="10px" fontWeight="black" />
                 </Avatar.Root>
             )}
         </HStack>

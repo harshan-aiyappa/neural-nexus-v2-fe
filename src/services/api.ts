@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://10.10.20.122:8000';
 
 // Create axios instance with base URL
 const api = axios.create({
@@ -33,8 +33,11 @@ export interface Relationship {
 
 export const nexusApi = {
     // Auth
-    login: async (formData: FormData) => {
-        const response = await api.post('/auth/login', formData, {
+    login: async (email: string, password: string) => {
+        const params = new URLSearchParams();
+        params.append('username', email);
+        params.append('password', password);
+        const response = await api.post('/auth/login', params, {
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
         });
         if (response.data.access_token) {
@@ -43,8 +46,13 @@ export const nexusApi = {
         }
         return response.data;
     },
-    register: async (userData: any) => {
-        const response = await api.post('/auth/register', userData);
+    register: async (email: string, password: string, fullName: string) => {
+        const response = await api.post('/auth/register', { 
+            email, 
+            password, 
+            full_name: fullName, 
+            role: 'RESEARCHER' 
+        });
         if (response.data.access_token) {
             localStorage.setItem('nexus_token', response.data.access_token);
             localStorage.setItem('user_role', response.data.role);
@@ -112,6 +120,26 @@ export const nexusApi = {
     },
     getActivity: async () => {
         const response = await api.get('/graph/activity/');
+        return response.data;
+    },
+
+    // Settings & Resilience (Phase 6)
+    updateApiKey: async (name: string, value: string) => {
+        const response = await api.post('/settings/update-key', { key_name: name, key_value: value });
+        return response.data;
+    },
+    getSystemStatus: async () => {
+        const response = await api.get('/settings/status');
+        return response.data;
+    },
+
+    // Analytics (Phase 14)
+    getAnalyticsFlow: async () => {
+        const response = await api.get('/analytics/flow');
+        return response.data;
+    },
+    getAnalyticsMetrics: async () => {
+        const response = await api.get('/analytics/metrics');
         return response.data;
     }
 };

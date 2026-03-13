@@ -1,22 +1,17 @@
-import { Box, Heading, Text, VStack, HStack, Button, Textarea, Flex, Badge, Icon, Circle } from '@chakra-ui/react';
-import { useColorModeValue } from '@/components/ui/color-mode';
+import { Box, Heading, Text, VStack, HStack, Button, Textarea, Flex, Badge, Circle } from '@chakra-ui/react';
 import { useState, useRef, useEffect } from 'react';
-import { LuUpload, LuFileCode, LuNetwork } from 'react-icons/lu';
+import { LuUpload, LuFileCode, LuNetwork, LuSparkles } from 'react-icons/lu';
 import { nexusApi } from '@/services/api';
+import gsap from 'gsap';
 
 export const DataUpload = () => {
     const [cypherText, setCypherText] = useState('');
     const [isUploading, setIsUploading] = useState(false);
     const [status, setStatus] = useState<{ type: 'idle' | 'success' | 'error', message: string }>({ type: 'idle', message: '' });
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     const [folders, setFolders] = useState<any[]>([]);
     const [selectedFolder, setSelectedFolder] = useState<string>('');
-
-    const cardBg = useColorModeValue('white', 'bg.surface');
-    const borderColor = useColorModeValue('gray.200', 'white/10');
-    const selectBg = useColorModeValue('gray.100', 'rgba(0,0,0,0.1)');
-    const selectColor = useColorModeValue('gray.800', 'white');
-    const optionBg = useColorModeValue('white', '#1a1a1a');
 
     useEffect(() => {
         const fetchFolders = async () => {
@@ -25,6 +20,22 @@ export const DataUpload = () => {
             if (res.length > 0) setSelectedFolder(res[0].slug);
         };
         fetchFolders();
+
+        const ctx = gsap.context(() => {
+            gsap.fromTo(".upload-card", 
+                { y: 30, opacity: 0 },
+                { 
+                    y: 0, 
+                    opacity: 1, 
+                    duration: 0.8, 
+                    stagger: 0.15, 
+                    ease: "power3.out", 
+                    delay: 0.2,
+                    clearProps: "all"
+                }
+            );
+        }, containerRef);
+        return () => ctx.revert();
     }, []);
 
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,7 +55,7 @@ export const DataUpload = () => {
 
         try {
             const res = await nexusApi.uploadCypherFile(formData, selectedFolder);
-            setStatus({ type: 'success', message: `Successfully queued ${res.filename} for embedding! Check dashboard later.` });
+            setStatus({ type: 'success', message: `Successfully queued ${res.filename} for embedding!` });
             setCypherText('');
         } catch (error: any) {
             setStatus({ type: 'error', message: error.response?.data?.detail || 'File upload failed' });
@@ -62,7 +73,7 @@ export const DataUpload = () => {
 
         try {
             await nexusApi.uploadCypherText(cypherText, selectedFolder);
-            setStatus({ type: 'success', message: 'Successfully queued raw Cypher for embedding! Check dashboard later.' });
+            setStatus({ type: 'success', message: 'Successfully queued raw Cypher for embedding!' });
             setCypherText('');
         } catch (error: any) {
             setStatus({ type: 'error', message: error.response?.data?.detail || 'Upload failed' });
@@ -72,32 +83,39 @@ export const DataUpload = () => {
     };
 
     return (
-        <Box p={8} w="full">
-            <VStack align="start" spaceY={8} w="full">
-                {/* Header Subtitle */}
-                <HStack w="full" justifyContent="space-between">
+        <Box p={8} w="full" ref={containerRef}>
+            <VStack align="stretch" spaceY={10} w="full">
+                <HStack w="full" justifyContent="space-between" className="upload-card">
                     <VStack align="start" spaceY={2}>
-                        <Heading size="2xl" fontWeight="black" letterSpacing="tight">Upload Data</Heading>
-                        <Text color="gray.400">Upload bulk Cypher files. The system will automatically clean comments, ingest data, and generate Gemini embeddings in the background.</Text>
+                        <HStack spaceX={3}>
+                            <Circle size="10" bg="turf-green" shadow="glow">
+                                <LuUpload color="white" size="20px" />
+                            </Circle>
+                            <Heading size="3xl" fontWeight="black" letterSpacing="tighter" color="fg">Data Ingestion</Heading>
+                        </HStack>
+                        <Text color="fg.muted" fontWeight="medium" maxW="800px">
+                            Upload bulk Cypher files to the Nexus. Our Gemini-powered pipeline automatically cleans syntax, 
+                            ingests nodes, and generates high-dimensional embeddings in the background.
+                        </Text>
                     </VStack>
-                    <VStack align="end" spaceY={1}>
-                        <Text fontSize="10px" fontWeight="black" color="jungle-teal">TARGET FOLDER</Text>
+                    <VStack align="end" spaceY={1} p={3} bg="bg.surface" rounded="2xl" border="1px solid" borderColor="border.subtle" shadow="premium">
+                        <Text fontSize="9px" fontWeight="black" color="turf-green" letterSpacing="widest">TARGET CLUSTER</Text>
                         <select
                             style={{
-                                background: selectBg,
-                                color: selectColor,
-                                fontSize: '12px',
-                                fontWeight: 'bold',
-                                padding: '8px 16px',
-                                borderRadius: '10px',
-                                border: `1px solid ${borderColor}`,
-                                cursor: 'pointer'
+                                background: 'transparent',
+                                color: 'var(--chakra-colors-fg)',
+                                fontSize: '13px',
+                                fontWeight: '900',
+                                border: 'none',
+                                outline: 'none',
+                                cursor: 'pointer',
+                                textAlign: 'right'
                             }}
                             value={selectedFolder}
                             onChange={(e) => setSelectedFolder(e.target.value)}
                         >
                             {folders.map(f => (
-                                <option key={f.id} value={f.slug} style={{ background: optionBg, color: selectColor }}>{f.name.toUpperCase()}</option>
+                                <option key={f.id} value={f.slug} style={{ background: 'var(--chakra-colors-bg-surface)', color: 'var(--chakra-colors-fg)' }}>{f.name.toUpperCase()}</option>
                             ))}
                         </select>
                     </VStack>
@@ -105,12 +123,10 @@ export const DataUpload = () => {
 
                 <HStack w="full" align="stretch" spaceX={8}>
                     {/* Raw Text Input */}
-                    <Flex flex={2} bg={cardBg} p={6} rounded="3xl" border="1px solid" borderColor={borderColor} direction="column" shadow="xl">
-                        <HStack mb={4} spaceX={3}>
-                            <Circle size="10" bg="jungle-teal/10" color="jungle-teal">
-                                <LuFileCode size="20px" />
-                            </Circle>
-                            <Heading size="md" fontWeight="black">Paste Cypher Query</Heading>
+                    <Flex flex={2} bg="bg.surface" p={8} rounded="3xl" border="1px solid" borderColor="border.subtle" direction="column" shadow="premium" className="upload-card">
+                        <HStack mb={6} spaceX={3}>
+                            <LuFileCode size="24px" color="var(--chakra-colors-turf-green)" />
+                            <Heading size="md" fontWeight="black" color="fg">Raw Cypher Stream</Heading>
                         </HStack>
 
                         <Textarea
@@ -118,60 +134,101 @@ export const DataUpload = () => {
                             value={cypherText}
                             onChange={(e) => setCypherText(e.target.value)}
                             flex={1}
-                            minH="300px"
-                            bg={useColorModeValue('gray.50', 'black/5')}
-                            p={4}
+                            minH="400px"
+                            bg="bg.muted"
+                            p={6}
                             border="1px solid"
-                            borderColor={borderColor}
+                            borderColor="border.subtle"
                             rounded="2xl"
                             fontFamily="mono"
                             fontSize="sm"
-                            _focus={{ borderColor: 'jungle-teal' }}
+                            color="fg"
+                            fontWeight="bold"
+                            lineHeight="tall"
+                            _placeholder={{ color: "fg.muted" }}
+                            _focus={{ borderColor: 'turf-green', bg: 'bg.muted', shadow: '0 0 15px rgba(16, 123, 65, 0.1)' }}
                         />
 
-                        <HStack mt={6} justifyContent="space-between">
-                            <Badge variant="subtle" colorPalette="yellow" size="sm">Auto-cleans formatting</Badge>
+                        <HStack mt={8} justifyContent="space-between">
+                            <Badge variant="subtle" bg="turf-green/5" color="turf-green" size="sm" rounded="md" fontWeight="black" px={3}>SCHEMA AUTO-VALIDATION ACTIVE</Badge>
                             <Button
-                                bg="jungle-teal"
+                                bg="turf-green"
                                 color="white"
-                                rounded="xl"
-                                shadow="md"
-                                _hover={{ bg: 'turf-green' }}
+                                h="60px"
+                                px={10}
+                                rounded="2xl"
+                                shadow="premium"
+                                fontWeight="black"
+                                letterSpacing="wider"
+                                _hover={{ bg: 'brand.turf-2', transform: 'translateY(-2px)' }}
                                 onClick={handleTextUpload}
                                 loading={isUploading}
                                 disabled={!cypherText.trim() || !selectedFolder}
                             >
-                                <LuNetwork /> Ingest & Embed Data
+                                <LuNetwork style={{ marginRight: '8px' }} /> SYNTHESIZE DATA
                             </Button>
                         </HStack>
                     </Flex>
 
                     {/* File Upload Zone */}
-                    <Flex flex={1} bg={cardBg} p={6} rounded="3xl" border="1px dashed" borderColor="jungle-teal/50" direction="column" justify="center" align="center" textAlign="center" _hover={{ bg: 'jungle-teal/5' }} cursor="pointer" onClick={() => fileInputRef.current?.click()} shadow="lg">
-                        <Icon as={LuUpload} w={16} h={16} color="jungle-teal" mb={4} />
-                        <Heading size="md" fontWeight="black" mb={2}>Upload .cypher File</Heading>
-                        <Text fontSize="sm" color="gray.400" px={4}>
-                            Select a seed file (like seed_data.cypher) to ingest entire pre-constructed knowledge graphs.
-                        </Text>
-                        <input
-                            type="file"
-                            accept=".cypher,.txt"
-                            style={{ display: 'none' }}
-                            ref={fileInputRef}
-                            onChange={handleFileUpload}
-                        />
-                        <Button mt={8} variant="outline" borderColor="jungle-teal" color="jungle-teal" rounded="xl" w="full" loading={isUploading} disabled={!selectedFolder}>
-                            Browse Files
-                        </Button>
-                    </Flex>
+                    <VStack flex={1} spaceY={8}>
+                        <Flex 
+                            w="full"
+                            flex={1}
+                            bg="bg.surface" 
+                            p={10} 
+                            rounded="3xl" 
+                            border="2px dashed" 
+                            borderColor="turf-green/30" 
+                            direction="column" 
+                            justify="center" 
+                            align="center" 
+                            textAlign="center" 
+                            _hover={{ bg: 'turf-green/5', borderColor: "turf-green", transform: 'scale(1.02)' }} 
+                            transition="all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
+                            cursor="pointer" 
+                            onClick={() => fileInputRef.current?.click()} 
+                            shadow="premium"
+                            className="upload-card"
+                        >
+                            <Circle size="20" bg="turf-green/5" mb={6} shadow="inner">
+                                <LuUpload size="32px" color="var(--chakra-colors-turf-green)" />
+                            </Circle>
+                            <Heading size="md" fontWeight="black" mb={2} color="fg">Import Seed File</Heading>
+                            <Text fontSize="xs" color="fg.muted" px={4} fontWeight="bold" lineHeight="tall">
+                                Select a verified .cypher or .txt structure to batch-ingest entire knowledge clusters.
+                            </Text>
+                            <input
+                                type="file"
+                                accept=".cypher,.txt"
+                                style={{ display: 'none' }}
+                                ref={fileInputRef}
+                                onChange={handleFileUpload}
+                            />
+                            <Button mt={10} variant="outline" borderColor="turf-green" color="turf-green" rounded="2xl" h="56px" w="full" fontWeight="black" loading={isUploading} disabled={!selectedFolder} _hover={{ bg: 'turf-green', color: 'white' }}>
+                                SCAN LOCAL DRIVE
+                            </Button>
+                        </Flex>
+
+                        <Box w="full" p={6} bg="turf-green/5" rounded="2xl" border="1px solid" borderColor="turf-green/20" className="upload-card">
+                            <HStack spaceX={3}>
+                                <LuSparkles color="var(--chakra-colors-turf-green)" />
+                                <Text fontSize="10px" fontWeight="black" color="fg" letterSpacing="widest">PRO TIP</Text>
+                            </HStack>
+                            <Text fontSize="11px" color="fg.muted" mt={2} fontWeight="bold">Use MERGE instead of CREATE to ensure entity identity preservation during multi-file ingestion.</Text>
+                        </Box>
+                    </VStack>
                 </HStack>
 
                 {/* Status Indicator */}
                 {status.message && (
-                    <Box w="full" p={4} rounded="xl" bg={status.type === 'success' ? 'green.500/10' : 'red.500/10'} border="1px solid" borderColor={status.type === 'success' ? 'green.500/30' : 'red.500/30'}>
-                        <Text color={status.type === 'success' ? 'green.500' : 'red.500'} fontWeight="bold" fontSize="sm">
-                            {status.message}
-                        </Text>
+                    <Box w="full" p={6} rounded="2xl" bg={status.type === 'success' ? 'turf-green/10' : 'red.500/10'} border="1px solid" borderColor={status.type === 'success' ? 'turf-green/30' : 'red.500/30'} className="upload-card" animate-in fade-in slide-in-from-bottom-2 duration-300>
+                        <HStack spaceX={4}>
+                           <Circle size="2" bg={status.type === 'success' ? 'turf-green' : 'red.500'} shadow="glow" />
+                           <Text color={status.type === 'success' ? 'turf-green' : 'red.600'} fontWeight="black" fontSize="xs" letterSpacing="widest">
+                                {status.message.toUpperCase()}
+                            </Text>
+                        </HStack>
                     </Box>
                 )}
             </VStack>

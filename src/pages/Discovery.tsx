@@ -1,73 +1,55 @@
 import { Box, Heading, Text, VStack, HStack, Circle, Flex, Input, Button, Badge } from '@chakra-ui/react';
-import { useColorModeValue } from '@/components/ui/color-mode';
-import { useState, useRef, useEffect } from 'react';
-import { LuSearch as LuScanSearch, LuInfinity } from 'react-icons/lu';
-import { NexusGraph } from '@/components/graph/3d/ForceGraph3D';
+import { useState, useRef, useEffect, useMemo } from 'react';
+import { LuSearch as LuScanSearch, LuInfinity, LuFilter, LuLayers, LuMaximize2, LuDownload } from 'react-icons/lu';
+import { useQuery } from '@tanstack/react-query';
+import { useNexusStore } from '@/store/NexusStore';
+import { NexusGraph2D } from '@/components/graph/2d/NexusGraph2D';
+import { EntityInfoPanel } from '@/components/graph/EntityInfoPanel';
 import { nexusApi } from '@/services/api';
 import gsap from 'gsap';
 import { useSearchParams } from 'react-router-dom';
 
 const LabelText = ({ label }: { label: string }) => {
-    const textColor = useColorModeValue('gray.700', 'white');
-    return <Text fontSize="10px" fontWeight="black" color={textColor}>{label.toUpperCase()}</Text>;
+    return <Text fontSize="10px" fontWeight="black" color="fg">{label.toUpperCase()}</Text>;
 };
-
 export const Discovery = ({ layoutMode = 'network' }: { layoutMode?: 'network' | 'tree' | 'radial' }) => {
     const [searchParams] = useSearchParams();
-    const cardBg = useColorModeValue('white', 'black/60');
-    const headerBg = useColorModeValue('white/80', 'black/60');
-    const borderColor = useColorModeValue('gray.200', 'white/10');
-    const headerTextColor = useColorModeValue('gray.800', 'white');
-    const selectBg = useColorModeValue('gray.100', 'white/5');
-    const selectColor = useColorModeValue('gray.800', 'white');
-    const optionBg = useColorModeValue('white', '#1a1a1a');
-
-    // Graph State
-    const [graphData, setGraphData] = useState<{ nodes: any[], links: any[] }>({ nodes: [], links: [] });
-    const [folders, setFolders] = useState<any[]>([]);
-    const [selectedFolder, setSelectedFolder] = useState<string>('');
+    const { isSidebarCollapsed: _isSidebarCollapsed, selectedFolderSlug, setSelectedFolderSlug } = useNexusStore();
+    
+    // UI State
     const [searchTerm, setSearchTerm] = useState('');
     const [activeLabels, setActiveLabels] = useState<string[]>([]);
     const [activeRelTypes, setActiveRelTypes] = useState<string[]>([]);
     const [showFilters, setShowFilters] = useState(true);
+    const [selectedEntity, setSelectedEntity] = useState<any>(null);
 
-    // Refs
-    const headerRef = useRef(null);
-    const legendRef = useRef(null);
+    // TanStack Query for Folders
+    const { data: folders = [] } = useQuery({
+        queryKey: ['folders'],
+        queryFn: nexusApi.getFolders,
+    });
 
-    // Initial Data Fetch
+    const borderColor = "border.subtle";
+
+    // Sync search param with store
     useEffect(() => {
-        const init = async () => {
-            try {
-                const folderData = await nexusApi.getFolders();
-                setFolders(folderData);
+        const folderParam = searchParams.get('folder');
+        if (folderParam) {
+            setSelectedFolderSlug(folderParam);
+        } else if (folders.length > 0 && !selectedFolderSlug) {
+            setSelectedFolderSlug(folders[0].slug);
+        }
 
-                // Deep Link Logic
-                const folderParam = searchParams.get('folder');
-                const highlightParam = searchParams.get('highlight');
+        const highlightParam = searchParams.get('highlight');
+        if (highlightParam) setSearchTerm(highlightParam);
+    }, [searchParams, folders, selectedFolderSlug]);
 
-                if (folderParam) {
-                    setSelectedFolder(folderParam);
-                    fetchGraph(folderParam);
-                } else if (folderData.length > 0) {
-                    const firstSlug = folderData[0].slug;
-                    setSelectedFolder(firstSlug);
-                    fetchGraph(firstSlug);
-                }
-
-                if (highlightParam) {
-                    setSearchTerm(highlightParam);
-                }
-            } catch (error) {
-                console.error("Init discovery failed:", error);
-            }
-        };
-        init();
-    }, [searchParams]);
-
-    const fetchGraph = async (slug: string) => {
-        try {
-            const data = await nexusApi.getGraph(slug);
+    // TanStack Query for Graph Data
+    const { data: graphData = { nodes: [], links: [] }, isLoading: _isGraphLoading } = useQuery({
+        queryKey: ['graph', selectedFolderSlug],
+        queryFn: async () => {
+            if (!selectedFolderSlug) return { nodes: [], links: [] };
+            const data = await nexusApi.getGraph(selectedFolderSlug);
             const nodes = data.nodes.map((n: any) => ({
                 id: n.id,
                 name: n.name,
@@ -78,67 +60,110 @@ export const Discovery = ({ layoutMode = 'network' }: { layoutMode?: 'network' |
             const links = data.relationships.map((r: any) => ({
                 source: r.source,
                 target: r.target,
-                type: r.type
+                type: r.type,
+                isSymmetric: r.isSymmetric
             }));
+            return { nodes, links };
+        },
+        enabled: !!selectedFolderSlug,
+    });
 
-            setGraphData({ nodes, links });
-
-            // Extract unique labels and relationship types
-            const labels = Array.from(new Set(nodes.map((n: any) => n.label))) as string[];
-            const relTypes = Array.from(new Set(links.map((l: any) => l.type))) as string[];
-
+    // Update active filters when graph data changes
+    useEffect(() => {
+        if (graphData.nodes.length > 0) {
+            const labels = Array.from(new Set(graphData.nodes.map((n: any) => n.label))) as string[];
+            const relTypes = Array.from(new Set(graphData.links.map((l: any) => l.type))) as string[];
             setActiveLabels(labels);
             setActiveRelTypes(relTypes);
-        } catch (error) {
-            console.error("Fetch graph failed:", error);
         }
-    };
+    }, [graphData]);
+
+    // Refs
+    const containerRef = useRef(null);
+    const headerRef = useRef(null);
+    const legendRef = useRef(null);
 
     const handleFolderChange = (slug: string) => {
-        setSelectedFolder(slug);
-        fetchGraph(slug);
+        setSelectedFolderSlug(slug);
     };
 
     // Filter Logic
-    const filteredNodes = graphData.nodes.filter(n => {
-        // If searching specifically for an ID (deep link), prioritize that
-        const highlightParam = searchParams.get('highlight');
-        if (highlightParam && n.id === highlightParam) return true;
+    const filteredNodes = useMemo(() => {
+        return graphData.nodes.filter((n: any) => {
+            const highlightParam = searchParams.get('highlight');
+            if (highlightParam && n.id === highlightParam) return true;
 
-        const matchesSearch = n.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            n.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            n.label.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesLabel = activeLabels.includes(n.label);
-        return matchesSearch && matchesLabel;
-    });
+            const matchesSearch = (n.name?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+                (n.id?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+                (n.label?.toLowerCase() || "").includes(searchTerm.toLowerCase());
+            const matchesLabel = activeLabels.includes(n.label);
+            return matchesSearch && matchesLabel;
+        });
+    }, [graphData.nodes, searchTerm, activeLabels, searchParams]);
 
-    const displayData = {
+    const displayData = useMemo(() => ({
         nodes: filteredNodes,
-        links: graphData.links.filter(l => {
+        links: graphData.links.filter((l: any) => {
             const matchesRelType = activeRelTypes.includes(l.type);
             const sourceId = typeof l.source === 'object' ? l.source.id : l.source;
             const targetId = typeof l.target === 'object' ? l.target.id : l.target;
-            const nodesExist = filteredNodes.some(n => n.id === sourceId) && filteredNodes.some(n => n.id === targetId);
+            const nodesExist = filteredNodes.some((n: any) => n.id === sourceId) && filteredNodes.some((n: any) => n.id === targetId);
             return matchesRelType && nodesExist;
         })
-    };
+    }), [filteredNodes, graphData.links, activeRelTypes]);
 
-    const nodeCounts = graphData.nodes.reduce((acc: any, n: any) => {
-        acc[n.label] = (acc[n.label] || 0) + 1;
-        return acc;
-    }, {});
+    const nodeCounts = useMemo(() => {
+        return graphData.nodes.reduce((acc: any, n: any) => {
+            acc[n.label] = (acc[n.label] || 0) + 1;
+            return acc;
+        }, {});
+    }, [graphData.nodes]);
 
-    const relCounts = graphData.links.reduce((acc: any, l: any) => {
-        acc[l.type] = (acc[l.type] || 0) + 1;
-        return acc;
-    }, {});
+    const relCounts = useMemo(() => {
+        return graphData.links.reduce((acc: any, l: any) => {
+            acc[l.type] = (acc[l.type] || 0) + 1;
+            return acc;
+        }, {});
+    }, [graphData.links]);
+
+    // Neighborhood Context for Selected Entity
+    const neighborhood = useMemo(() => {
+        if (!selectedEntity) return { nodes: [], links: [] };
+        const isNode = !selectedEntity.type && !selectedEntity.source;
+        if (!isNode) return { nodes: [selectedEntity], links: [] };
+
+        const links = graphData.links.filter((l: any) => {
+            const s = typeof l.source === 'object' ? l.source.id : l.source;
+            const t = typeof l.target === 'object' ? l.target.id : l.target;
+            return s === selectedEntity.id || t === selectedEntity.id;
+        });
+
+        const neighborIds = new Set([selectedEntity.id, ...links.flatMap((l: any) => [
+            typeof l.source === 'object' ? l.source.id : l.source,
+            typeof l.target === 'object' ? l.target.id : l.target
+        ])]);
+
+        const nodes = graphData.nodes.filter((n: any) => neighborIds.has(n.id));
+        return { nodes, links };
+    }, [selectedEntity, graphData.nodes, graphData.links]);
 
     useEffect(() => {
-        if (headerRef.current) gsap.from(headerRef.current, { opacity: 0, y: -20, duration: 1, ease: 'power3.out' });
-        if (legendRef.current) gsap.from(legendRef.current, { opacity: 0, y: 20, duration: 1, delay: 0.3, ease: 'power3.out' });
+        const ctx = gsap.context(() => {
+            if (headerRef.current) {
+                gsap.fromTo(headerRef.current,
+                    { opacity: 0, y: -30 },
+                    { opacity: 1, y: 0, duration: 1.2, ease: 'expo.out', clearProps: "all" }
+                );
+            }
+            if (legendRef.current) {
+                gsap.fromTo(legendRef.current,
+                    { opacity: 0, y: 30 },
+                    { opacity: 1, y: 0, duration: 1.2, delay: 0.4, ease: 'expo.out', clearProps: "all" }
+                );
+            }
+        }, containerRef);
+        return () => ctx.revert();
     }, []);
-
-    const cardShadow = useColorModeValue('md', 'none');
 
     const toggleLabel = (label: string) => {
         setActiveLabels(prev =>
@@ -152,252 +177,275 @@ export const Discovery = ({ layoutMode = 'network' }: { layoutMode?: 'network' |
         );
     };
 
-    const selectedFolderName = folders.find(f => f.slug === selectedFolder)?.name || 'NONE';
+    const selectedFolderName = folders.find((f: any) => f.slug === selectedFolderSlug)?.name || 'NONE';
 
     return (
-        <Flex h="full" w="full" bg="bg.canvas" position="relative" overflow="hidden">
-            {/* Filter Sidebar (Bloom Style) */}
+        <Flex ref={containerRef} h="100%" w="full" bg="bg.canvas" position="relative" overflow="hidden">
+            {/* Filter Sidebar - Glassmorphism */}
             <Box
-                w={showFilters ? "320px" : "0px"}
+                w={showFilters ? { base: "full", md: "340px" } : "0px"}
                 h="full"
-                bg={cardBg}
-                backdropBlur="md"
+                bg="bg.surface"
                 borderRight="1px solid"
                 borderColor={borderColor}
-                transition="all 0.3s ease"
+                transition="all 0.5s cubic-bezier(0.19, 1, 0.22, 1)"
                 overflow="hidden"
                 zIndex={30}
-                position="relative"
-                shadow={cardShadow}
+                position={{ base: "absolute", md: "relative" }}
+                className="glass-card"
             >
-                <VStack align="stretch" p={5} spaceY={6} h="full">
+                <VStack align="stretch" p={6} gap={8} h="full">
                     <HStack justifyContent="space-between">
-                        <Heading size="xs" color="gray.500" letterSpacing="widest">FILTERS</Heading>
-                        <Button variant="ghost" size="xs" onClick={() => setShowFilters(false)}>✕</Button>
+                        <HStack gap={2}>
+                            <Circle size="8" bg="turf-green/10" color="turf-green">
+                                <LuFilter size="14px" />
+                            </Circle>
+                            <Heading size="xs" color="fg.muted" letterSpacing="2px" fontWeight="black">ENGINE FILTERS</Heading>
+                        </HStack>
+                        <Button variant="ghost" size="xs" onClick={() => setShowFilters(false)} color="fg.muted" rounded="full">✕</Button>
                     </HStack>
 
-                    {/* Sidebar Search */}
-                    <HStack bg={selectBg} px={3} py={2} rounded="xl" border="1px solid" borderColor={borderColor}>
-                        <LuScanSearch size="14px" color="gray" />
+                    <Box position="relative">
+                        <Box position="absolute" left={3} top="50%" transform="translateY(-50%)" color="turf-green" zIndex={2}>
+                            <LuScanSearch size="14px" />
+                        </Box>
                         <Input
-                            variant="subtle"
-                            bg="transparent"
-                            border="none"
-                            placeholder="Search nodes..."
+                            bg="bg.muted"
+                            color="fg"
+                            border="1px solid"
+                            borderColor="border.subtle"
+                            rounded="xl"
+                            pl={10}
+                            h="44px"
+                            placeholder="Find local entities..."
                             fontSize="xs"
+                            fontWeight="bold"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
+                            _focus={{ borderColor: "turf-green" }}
                         />
-                    </HStack>
+                    </Box>
 
-                    {/* Node Types */}
-                    <VStack align="stretch" spaceY={3}>
+                    <VStack align="stretch" gap={4}>
                         <HStack justifyContent="space-between">
-                            <Text fontSize="10px" fontWeight="black" color="jungle-teal">NODE TYPES</Text>
-                            <HStack spaceX={2}>
-                                <Text cursor="pointer" fontSize="9px" onClick={() => setActiveLabels(Array.from(new Set(graphData.nodes.map(n => n.label))))}>Select All</Text>
-                                <Text cursor="pointer" fontSize="9px" onClick={() => setActiveLabels([])}>Deselect All</Text>
+                            <Text fontSize="10px" fontWeight="black" color="turf-green">ENTITY CLASSES</Text>
+                            <HStack gap={2}>
+                                <Text cursor="pointer" fontSize="9px" color="fg.muted" fontWeight="bold" onClick={() => setActiveLabels(Object.keys(nodeCounts))}>ALL</Text>
+                                <Text cursor="pointer" fontSize="9px" color="fg.muted" fontWeight="bold" onClick={() => setActiveLabels([])}>NONE</Text>
                             </HStack>
                         </HStack>
-                        <Box maxH="200px" overflowY="auto">
-                            <VStack align="stretch" spaceY={1}>
+                        <Box maxH="220px" overflowY="auto" pr={2}>
+                            <VStack align="stretch" gap={1.5}>
                                 {Object.keys(nodeCounts).sort().map((label, idx) => (
                                     <HStack
                                         key={label}
-                                        p={2}
-                                        rounded="md"
-                                        bg={activeLabels.includes(label) ? "jungle-teal/10" : "transparent"}
-                                        _hover={{ bg: "white/5" }}
+                                        p={3}
+                                        rounded="xl"
+                                        bg={activeLabels.includes(label) ? "turf-green/5" : "transparent"}
+                                        border="1px solid"
+                                        borderColor={activeLabels.includes(label) ? "turf-green/20" : "transparent"}
+                                        _hover={{ bg: "bg.muted" }}
                                         cursor="pointer"
                                         onClick={() => toggleLabel(label)}
                                         justifyContent="space-between"
+                                        transition="all 0.2s"
                                     >
-                                        <HStack spaceX={3}>
-                                            <Circle size="2" bg={idx % 3 === 0 ? "jungle-teal" : (idx % 3 === 1 ? "turf-green" : "gold")} opacity={activeLabels.includes(label) ? 1 : 0.3} />
-                                            <Text fontSize="xs" fontWeight={activeLabels.includes(label) ? "bold" : "normal"}>{label}</Text>
+                                        <HStack gap={3}>
+                                            <Circle size="2" bg={activeLabels.includes(label) ? (idx % 2 === 0 ? "turf-green" : "jungle-teal") : "fg.muted"} shadow={activeLabels.includes(label) ? "glow" : "none"} />
+                                            <Text fontSize="xs" fontWeight="black" color={activeLabels.includes(label) ? "fg" : "fg.muted"}>{String(label).toUpperCase()}</Text>
                                         </HStack>
-                                        <Badge variant="subtle" size="xs" rounded="full">{nodeCounts[label]}</Badge>
+                                        <Badge variant="subtle" size="sm" rounded="md" bg="bg.muted">{nodeCounts[label]}</Badge>
                                     </HStack>
                                 ))}
                             </VStack>
                         </Box>
                     </VStack>
 
-                    {/* Relationship Types */}
-                    <VStack align="stretch" spaceY={3}>
+                    <VStack align="stretch" gap={4}>
                         <HStack justifyContent="space-between">
-                            <Text fontSize="10px" fontWeight="black" color="jungle-teal">RELATIONSHIP TYPES</Text>
-                            <HStack spaceX={2}>
-                                <Text cursor="pointer" fontSize="9px" onClick={() => setActiveRelTypes(Array.from(new Set(graphData.links.map(l => l.type))))}>Select All</Text>
-                                <Text cursor="pointer" fontSize="9px" onClick={() => setActiveRelTypes([])}>Deselect All</Text>
-                            </HStack>
+                            <Text fontSize="10px" fontWeight="black" color="turf-green">RELATIONSHIP MODELS</Text>
                         </HStack>
-                        <Box maxH="200px" overflowY="auto">
-                            <VStack align="stretch" spaceY={1}>
+                        <Box maxH="220px" overflowY="auto" pr={2}>
+                            <VStack align="stretch" gap={1.5}>
                                 {Object.keys(relCounts).sort().map(type => (
                                     <HStack
                                         key={type}
-                                        p={2}
-                                        rounded="md"
-                                        bg={activeRelTypes.includes(type) ? "white/10" : "transparent"}
-                                        _hover={{ bg: "white/5" }}
+                                        p={3}
+                                        rounded="xl"
+                                        bg={activeRelTypes.includes(type) ? "turf-green/5" : "transparent"}
+                                        border="1px solid"
+                                        borderColor={activeRelTypes.includes(type) ? "turf-green/20" : "transparent"}
+                                        _hover={{ bg: "bg.muted" }}
                                         cursor="pointer"
                                         onClick={() => toggleRelType(type)}
                                         justifyContent="space-between"
+                                        transition="all 0.2s"
                                     >
-                                        <HStack spaceX={3}>
-                                            <Box w="2px" h="10px" bg="gray.500" opacity={activeRelTypes.includes(type) ? 1 : 0.3} />
-                                            <Text fontSize="xs" fontWeight={activeRelTypes.includes(type) ? "bold" : "normal"}>{type}</Text>
+                                        <HStack gap={3}>
+                                            <Box w="3px" h="10px" bg={activeRelTypes.includes(type) ? "turf-green" : "border.subtle"} rounded="full" />
+                                            <Text fontSize="xs" fontWeight="black" color={activeRelTypes.includes(type) ? "fg" : "fg.muted"}>{type.toUpperCase()}</Text>
                                         </HStack>
-                                        <Badge variant="subtle" size="xs" rounded="full">{relCounts[type]}</Badge>
+                                        <Badge variant="subtle" size="sm" rounded="md" bg="bg.muted">{relCounts[type]}</Badge>
                                     </HStack>
                                 ))}
                             </VStack>
                         </Box>
                     </VStack>
-
-                    <Box pt={4} borderTop="1px solid" borderColor="white/10">
-                        <Text fontSize="10px" fontWeight="black" color="gray.500">MINIMUM CONNECTIONS</Text>
-                        <HStack mt={2}>
-                            <Box flex={1} h="2px" bg="white/10" position="relative">
-                                <Box position="absolute" left="0" top="-4px" w="10px" h="10px" bg="jungle-teal" rounded="full" cursor="pointer" />
-                            </Box>
-                        </HStack>
-                    </Box>
                 </VStack>
             </Box>
 
-            {/* Edge-to-Edge Graph Background */}
-            <Box flex={1} h="full" position="relative">
-                <NexusGraph data={displayData} layoutMode={layoutMode} />
-                <Box position="absolute" top={0} left={0} w="full" h="full" bgGradient="radial" gradientFrom="transparent" gradientTo="black/20" pointerEvents="none" />
+            {/* 3D Canvas Area */}
+            <Box flex={1} h="full" position="relative" bg="bg.canvas">
+                <NexusGraph2D 
+                    data={displayData} 
+                    layoutMode={layoutMode} 
+                    onNodeClick={(node: any) => setSelectedEntity(node)}
+                    onLinkClick={(link: any) => setSelectedEntity(link)}
+                />
 
-                {/* Toggle Filter Button */}
+                <EntityInfoPanel 
+                    entity={selectedEntity} 
+                    neighborhood={neighborhood}
+                    onClose={() => setSelectedEntity(null)} 
+                />
+
                 {!showFilters && (
-                    <Button
+                    <IconButton
+                        aria-label="Filters"
                         position="absolute"
-                        top={6}
-                        left={6}
+                        top={8}
+                        left={8}
                         zIndex={40}
                         onClick={() => setShowFilters(true)}
-                        bg={cardBg}
-                        backdropBlur="md"
-                        rounded="xl"
+                        bg="bg.surface"
+                        rounded="2xl"
                         border="1px solid"
                         borderColor={borderColor}
-                        size="sm"
+                        size="lg"
+                        shadow="premium"
+                        _hover={{ bg: "turf-green", color: "white" }}
                     >
-                        <LuScanSearch size="16px" />
-                    </Button>
+                        <LuFilter />
+                    </IconButton>
                 )}
             </Box>
 
-            {/* Bloom-Style Top Bar */}
+            {/* Premium Floated Command Top Bar */}
             <Box
                 position="absolute"
-                top={6}
-                left={showFilters ? "calc(50% + 160px)" : "50%"}
+                top={8}
+                left={showFilters ? "calc(50% + 170px)" : "50%"}
                 transform="translateX(-50%)"
                 zIndex={20}
-                w={showFilters ? "calc(90% - 320px)" : "90%"}
+                w={showFilters ? "calc(94% - 340px)" : "94%"}
                 maxW="1400px"
                 ref={headerRef}
-                transition="all 0.3s ease"
+                transition="all 0.5s cubic-bezier(0.19, 1, 0.22, 1)"
             >
                 <HStack
-                    bg={headerBg}
-                    backdropBlur="20px"
-                    p={3}
-                    px={6}
+                    bg="bg.surface/80"
+                    backdropFilter="blur(32px)"
+                    p={4}
+                    px={8}
                     rounded="full"
                     border="1px solid"
-                    borderColor={borderColor}
-                    shadow="2xl"
+                    borderColor="border.subtle"
+                    shadow="premium"
+                    gap={6}
                     justifyContent="space-between"
                 >
-                    <HStack spaceX={4}>
-                        <VStack align="start" spaceY={0}>
-                            <HStack spaceX={2}>
-                                <Badge colorPalette="teal" variant="outline" rounded="md" fontSize="8px" px={2} fontWeight="black">
-                                    FOLDER: {selectedFolderName.toUpperCase()}
+                    <HStack gap={6}>
+                        <VStack align="start" gap={0}>
+                            <HStack gap={2}>
+                                <Badge colorPalette="teal" variant="solid" bg="turf-green" rounded="md" fontSize="8px" px={2} fontWeight="black">
+                                    CLUSTER: {selectedFolderName.toUpperCase()}
                                 </Badge>
-                                <Circle size="1.5" bg="turf-green" className="animate-pulse" />
+                                <Circle size="1.5" bg="turf-green" className="animate-pulse" shadow="glow" />
                             </HStack>
-                            <Heading size="xs" fontWeight="black" letterSpacing="tight" color={headerTextColor}>
-                                {layoutMode === 'tree' ? 'Hierarchy Tree' : layoutMode === 'radial' ? 'Radial Burst' : 'Discovery Network'}
+                            <Heading size="sm" fontWeight="black" letterSpacing="tight" color="fg">
+                                Knowledge Discovery Engine
                             </Heading>
                         </VStack>
+                        <Box h="30px" w="1px" bg="border.muted" />
+                        <HStack gap={2}>
+                            <LuLayers size="14px" color="var(--chakra-colors-turf-green)" />
+                            <select
+                                style={{
+                                    background: 'transparent',
+                                    color: 'var(--chakra-colors-fg)',
+                                    fontSize: '11px',
+                                    fontWeight: '900',
+                                    border: 'none',
+                                    outline: 'none',
+                                    cursor: 'pointer'
+                                }}
+                                value={selectedFolderSlug || ''}
+                                onChange={(e) => handleFolderChange(e.target.value)}
+                            >
+                                {folders.map((f: any) => (
+                                    <option key={f.slug} value={f.slug} style={{ background: 'var(--chakra-colors-bg-surface)', color: 'var(--chakra-colors-fg)' }}>{f.name.toUpperCase()}</option>
+                                ))}
+                            </select>
+                        </HStack>
                     </HStack>
 
-                    <HStack spaceX={3}>
-                        <select
-                            style={{
-                                background: selectBg,
-                                color: selectColor,
-                                fontSize: '10px',
-                                fontWeight: 'black',
-                                padding: '6px 12px',
-                                borderRadius: '10px',
-                                border: `1px solid ${borderColor}`,
-                                cursor: 'pointer'
-                            }}
-                            value={selectedFolder}
-                            onChange={(e) => handleFolderChange(e.target.value)}
-                        >
-            {folders.map(f => (
-                                <option key={f.id} value={f.slug} style={{ background: optionBg, color: selectColor }}>{f.name.toUpperCase()}</option>
-                            ))}
-                        </select>
-                        <Button variant="ghost" rounded="xl" h="8" w="8" _hover={{ bg: 'white/10' }}>
-                            <LuInfinity size="16px" />
-                        </Button>
+                    <HStack gap={2}>
+                        <IconButton aria-label="Export" variant="ghost" rounded="full" color="fg.muted" _hover={{ bg: "bg.muted", color: "turf-green" }}><LuDownload size="18px" /></IconButton>
+                        <IconButton aria-label="Expand" variant="ghost" rounded="full" color="fg.muted" _hover={{ bg: "bg.muted", color: "turf-green" }}><LuMaximize2 size="18px" /></IconButton>
                     </HStack>
                 </HStack>
             </Box>
 
-            {/* Dynamic Node Legend (Bottom Center) */}
+            {/* Node Legend (Bottom Center) */}
             <Box
                 position="absolute"
                 bottom={10}
-                left={showFilters ? "calc(50% + 160px)" : "50%"}
+                left={showFilters ? "calc(50% + 170px)" : "50%"}
                 transform="translateX(-50%)"
-                transition="all 0.3s ease"
+                transition="all 0.5s cubic-bezier(0.19, 1, 0.22, 1)"
                 zIndex={20}
                 ref={legendRef}
             >
                 <HStack
-                    bg={headerBg}
-                    backdropBlur="20px"
+                    bg="bg.surface/70"
+                    backdropFilter="blur(24px)"
                     p={3}
-                    px={8}
+                    px={10}
                     rounded="full"
                     border="1px solid"
-                    borderColor={borderColor}
-                    shadow="2xl"
-                    spaceX={8}
+                    borderColor="border.subtle"
+                    shadow="premium"
+                    gap={10}
                 >
-                    <Text fontSize="9px" fontWeight="black" color="jungle-teal" letterSpacing="2px">LEGEND</Text>
-                    <HStack spaceX={6}>
-                        {activeLabels.slice(0, 5).map((label, idx) => (
-                            <HStack key={label} spaceX={2}>
-                                <Circle size="2" bg={idx % 3 === 0 ? 'jungle-teal' : (idx % 3 === 1 ? 'turf-green' : 'gold')} />
+                    <Text fontSize="9px" fontWeight="black" color="turf-green" letterSpacing="3px">KNOWLEDGE ATLAS</Text>
+                    <HStack gap={8}>
+                        {activeLabels.slice(0, 4).map((label, idx) => (
+                            <HStack key={label} gap={2.5}>
+                                <Circle size="2" bg={idx % 2 === 0 ? 'turf-green' : 'jungle-teal'} shadow="glow" />
                                 <LabelText label={label} />
                             </HStack>
                         ))}
-                        {activeLabels.length > 5 && <Text fontSize="9px" color={headerTextColor}>+{activeLabels.length - 5} MORE</Text>}
+                        {activeLabels.length > 4 && <Text fontSize="9px" color="fg.muted" fontWeight="black">+{activeLabels.length - 4} OTHER CLASSES</Text>}
                     </HStack>
                 </HStack>
             </Box>
 
-            {/* Right Bottom Metrics */}
+            {/* Metrics Badge */}
             <Box position="absolute" bottom={10} right={10} zIndex={10}>
-                <Badge bg="jungle-teal/20" color="jungle-teal" variant="subtle" p={3} px={5} rounded="2xl" border="1px solid" borderColor="jungle-teal/30">
-                    <HStack spaceX={3}>
-                        <LuInfinity />
-                        <Text fontSize="xs" fontWeight="black">{displayData.nodes.length} NODES</Text>
+                <Badge bg="bg.surface/80" backdropFilter="blur(16px)" color="turf-green" variant="outline" p={4} px={7} rounded="2xl" border="1px solid" borderColor="turf-green/30" shadow="premium">
+                    <HStack gap={4}>
+                        <LuInfinity size="20px" />
+                        <VStack align="start" gap={0}>
+                            <Text fontSize="14px" fontWeight="black">{displayData.nodes.length}</Text>
+                            <Text fontSize="8px" fontWeight="black" letterSpacing="widest" color="fg.muted">NODES IN VIEW</Text>
+                        </VStack>
                     </HStack>
                 </Badge>
             </Box>
         </Flex>
     );
 };
+
+const IconButton = ({ children, ...props }: any) => (
+    <Button p={0} minW="40px" h="40px" {...props}>{children}</Button>
+);
