@@ -16,6 +16,7 @@ const AuditLog = lazy(() => import('@/pages/AuditLog').then(m => ({ default: m.A
 const AnalyticsGallery = lazy(() => import('@/pages/AnalyticsGallery').then(m => ({ default: m.AnalyticsGallery })));
 const Logout = lazy(() => import('@/pages/Logout').then(m => ({ default: m.Logout })));
 const DataUpload = lazy(() => import('@/pages/DataUpload').then(m => ({ default: m.DataUpload })));
+const Settings = lazy(() => import('@/pages/Settings').then(m => ({ default: m.Settings })));
 
 // Loading component for Suspense
 const PageLoader = () => (
@@ -70,6 +71,7 @@ function App() {
                     <Route path="/chat" element={<Chat />} />
                     <Route path="/dashboard/audit" element={<AuditLog />} />
                     <Route path="/analytics" element={<AnalyticsGallery />} />
+                    <Route path="/settings" element={<Settings />} />
                     <Route path="/algorithms" element={
                       <Box p={8} h="full">
                         <VStack align="start" gap={4}>
