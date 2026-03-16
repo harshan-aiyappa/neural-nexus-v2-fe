@@ -48,9 +48,10 @@ export const NexusGraph2D: React.FC<Props> = ({ data, onNodeClick, onLinkClick, 
 
       const categoryIndex = uniqueLabels.indexOf(nodeLabel);
 
+      const { [ 'label' as any ]: _ignored, ...cleanNode } = node;
+      
       return {
-        ...node,
-        neo4jLabel: node.label, // Preserve original string label
+        ...cleanNode,
         id: String(node.id),
         name: node.name || node.id,
         category: categoryIndex >= 0 ? categoryIndex : 0,

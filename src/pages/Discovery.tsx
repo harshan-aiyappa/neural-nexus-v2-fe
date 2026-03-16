@@ -85,8 +85,8 @@ export const Discovery = ({ layoutMode = 'network' }: { layoutMode?: 'network' |
     // Update active filters when graph data changes
     useEffect(() => {
         if (graphData.nodes.length > 0) {
-            const labels = Array.from(new Set(graphData.nodes.map((n: any) => n.neo4jLabel))) as string[];
-            const relTypes = Array.from(new Set(graphData.links.map((l: any) => l.type))) as string[];
+            const labels = Array.from(new Set(graphData.nodes.map((n: any) => n.neo4jLabel || 'ENTITY'))) as string[];
+            const relTypes = Array.from(new Set(graphData.links.map((l: any) => l.type || 'RELATIONSHIP'))) as string[];
             setActiveLabels(labels);
             setActiveRelTypes(relTypes);
         }
