@@ -2,7 +2,7 @@ import { Box, Heading, Text, VStack, HStack, Circle, Flex, Input, Button, Badge 
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { LuSearch as LuScanSearch, LuInfinity, LuFilter, LuLayers, LuMaximize2, LuDownload } from 'react-icons/lu';
 import { useQuery } from '@tanstack/react-query';
-import { useNexusStore } from '@/store/NexusStore';
+import { useNexusStore } from '@/store/nexusStore';
 import { NexusGraph2D } from '@/components/graph/2d/NexusGraph2D';
 import { EntityInfoPanel } from '@/components/graph/EntityInfoPanel';
 import { nexusApi } from '@/services/api';
@@ -67,7 +67,7 @@ export const Discovery = ({ layoutMode = 'network' }: { layoutMode?: 'network' |
             const nodes = data.nodes.map((n: any) => ({
                 id: n.id,
                 name: n.name,
-                label: n.label,
+                neo4jLabel: n.label, // Renamed to avoid ECharts collision
                 val: 1,
                 properties: n.properties
             }));
@@ -85,7 +85,7 @@ export const Discovery = ({ layoutMode = 'network' }: { layoutMode?: 'network' |
     // Update active filters when graph data changes
     useEffect(() => {
         if (graphData.nodes.length > 0) {
-            const labels = Array.from(new Set(graphData.nodes.map((n: any) => n.label))) as string[];
+            const labels = Array.from(new Set(graphData.nodes.map((n: any) => n.neo4jLabel))) as string[];
             const relTypes = Array.from(new Set(graphData.links.map((l: any) => l.type))) as string[];
             setActiveLabels(labels);
             setActiveRelTypes(relTypes);

@@ -126,7 +126,7 @@ export const NexusGraph2D: React.FC<Props> = ({ data, onNodeClick, onLinkClick, 
                   <div style="width: 8px; height: 8px; border-radius: 50%; background: ${params.color};"></div>
                   <b style="font-size: 13px;">${n.name}</b>
                 </div>
-                <div style="color: ${colors.secondary}; font-size: 9px; font-weight: 900; opacity: 0.8;">${String(n.label || 'ENTITY').toUpperCase()}</div>
+                <div style="color: ${colors.secondary}; font-size: 10px; font-weight: 900; opacity: 0.8; letter-spacing: 0.5px;">${String(n.neo4jLabel || 'ENTITY').toUpperCase()}</div>
               </div>
             `;
           }
@@ -171,6 +171,16 @@ export const NexusGraph2D: React.FC<Props> = ({ data, onNodeClick, onLinkClick, 
     'click': (params: any) => {
       if (params.dataType === 'node') onNodeClick?.(params.data);
       else if (params.dataType === 'edge') onLinkClick?.(params.data);
+    },
+    'mouseover': (params: any) => {
+      if (params.dataType === 'node') {
+        const echartsInstance = echartsRef.current?.getEchartsInstance();
+        if (echartsInstance) echartsInstance.getZr().setCursorStyle('pointer');
+      }
+    },
+    'mouseout': (params: any) => {
+      const echartsInstance = echartsRef.current?.getEchartsInstance();
+      if (echartsInstance) echartsInstance.getZr().setCursorStyle('default');
     }
   };
 
