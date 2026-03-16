@@ -109,11 +109,11 @@ export const Discovery = ({ layoutMode = 'network' }: { layoutMode?: 'network' |
 
             const matchesSearch = (n.name?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
                 (n.id?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-                (n.label?.toLowerCase() || "").includes(searchTerm.toLowerCase());
-            const matchesLabel = activeLabels.includes(n.label);
+                (n.neo4jLabel?.toLowerCase() || "").includes(searchTerm.toLowerCase());
+            const matchesLabel = activeLabels.includes(n.neo4jLabel || 'ENTITY');
             return matchesSearch && matchesLabel;
         });
-    }, [graphData.nodes, searchTerm, activeLabels, searchParams]);
+    }, [graphData.nodes, searchTerm, activeLabels]);
 
     const displayData = useMemo(() => ({
         nodes: filteredNodes,
@@ -128,7 +128,8 @@ export const Discovery = ({ layoutMode = 'network' }: { layoutMode?: 'network' |
 
     const nodeCounts = useMemo(() => {
         return graphData.nodes.reduce((acc: any, n: any) => {
-            acc[n.label] = (acc[n.label] || 0) + 1;
+            const label = n.neo4jLabel || 'ENTITY';
+            acc[label] = (acc[label] || 0) + 1;
             return acc;
         }, {});
     }, [graphData.nodes]);
