@@ -1,5 +1,5 @@
 import { Box, HStack, Input, Button } from '@chakra-ui/react';
-import { LuSend, LuShieldCheck } from 'react-icons/lu';
+import { LuSend } from 'react-icons/lu';
 
 interface ChatInputProps {
     query: string;
@@ -10,48 +10,50 @@ interface ChatInputProps {
 }
 
 export const ChatInput = ({ query, setQuery, onSend, isLoading, placeholder = "Ask a question..." }: ChatInputProps) => {
-    const borderColor = "border.subtle";
-
     return (
-        <Box p={6} borderTop="1px solid" borderColor={borderColor} bg="bg.muted">
-            <HStack spaceX={4}>
+        <Box 
+            p={2} 
+            bg="bg.surface/40" 
+            backdropFilter="blur(20px)" 
+            rounded="3xl" 
+            border="1px solid" 
+            borderColor="white/10"
+            shadow="premium"
+            className="chat-input-pill"
+        >
+            <HStack gap={2}>
                 <Box flex={1} position="relative">
                     <Input
                         placeholder={placeholder}
-                        h="60px"
+                        h="54px"
                         rounded="2xl"
-                        bg="bg.surface"
-                        border="1px solid"
-                        borderColor={borderColor}
-                        p={6}
-                        pr={14}
+                        bg="transparent"
+                        border="none"
+                        p={4}
                         fontSize="md"
                         color="fg"
-                        _placeholder={{ color: "fg.muted" }}
-                        _focus={{ borderColor: 'jungle-teal', bg: 'bg.surface', shadow: '0 0 0 1px var(--chakra-colors-jungle-teal)' }}
+                        _placeholder={{ color: "fg.muted", opacity: 0.5 }}
+                        _focus={{ outline: 'none', shadow: 'none' }}
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && onSend()}
                         disabled={isLoading}
                     />
-                    <Box position="absolute" right={4} top="50%" transform="translateY(-50%)" color="jungle-teal" opacity={0.5}>
-                        <LuShieldCheck size="20px" />
-                    </Box>
                 </Box>
                 <Button
-                    bg="jungle-teal"
+                    bg="brand-emerald"
                     color="white"
-                    h="60px"
-                    w="60px"
-                    rounded="2xl"
-                    shadow="xl"
-                    _hover={{ bg: 'turf-green', transform: 'translateY(-2px)' }}
+                    h="44px"
+                    w="44px"
+                    rounded="xl"
+                    shadow="glow"
+                    _hover={{ bg: 'brand-emerald/80', transform: 'scale(1.05)' }}
                     _active={{ transform: 'scale(0.95)' }}
                     onClick={onSend}
                     loading={isLoading}
                     disabled={!query.trim()}
                 >
-                    <LuSend size="22px" />
+                    <LuSend size="18px" />
                 </Button>
             </HStack>
         </Box>

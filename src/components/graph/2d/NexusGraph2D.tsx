@@ -1,5 +1,6 @@
 import React, { useMemo, useRef } from 'react';
 import ReactECharts from 'echarts-for-react';
+import { getEntityColor, toSentenceCase } from '@/utils/graphColors';
 
 interface Props {
   data: {
@@ -15,38 +16,23 @@ export const NexusGraph2D: React.FC<Props> = ({ data, onNodeClick, onLinkClick, 
   const echartsRef = useRef<any>(null);
 
   const option = useMemo(() => {
-    // 1. Define Static Brand Colors (Explicit HEX for Canvas Rendering)
-    const colors = {
-      primary: '#10B981',    // Emerald
-      secondary: '#107B41',  // Jungle Teal
-      person: '#F59E0B',     // Amber
-      project: '#3B82F6',    // Blue
-      location: '#8B5CF6',   // Violet
-      medical: '#EF4444',    // Red
-      herb: '#059669',       // Dark Green
-      compound: '#0D9488',   // Teal
-      link: 'rgba(100, 116, 139, 0.3)', // slate-500 with opacity
-      text: '#475569'        // slate-600
-    };
+    // 1. Map Categories for Legend (Sentence Case)
+    const uniqueLabelsRaw = Array.from(new Set(data.nodes.map(n => String(n.label || n.neo4jLabel || 'Entity'))));
+    const categories = uniqueLabelsRaw.map(label => {
+      const sentenceLabel = toSentenceCase(label);
+      return { 
+        name: sentenceLabel, 
+        itemStyle: { color: getEntityColor(label) } 
+      };
+    });
 
-    // 2. Map Categories for Legend
-    const uniqueLabels = Array.from(new Set(data.nodes.map(n => String(n.label || n.neo4jLabel || 'Other').toUpperCase())));
-    const categories = uniqueLabels.map(name => ({ name }));
-
-    // 3. Map Nodes
+    // 2. Map Nodes
     const nodes = data.nodes.map((node) => {
-      const nodeLabel = String(node.label || node.neo4jLabel || '').toUpperCase();
-      let color = colors.primary;
+      const rawLabel = String(node.label || node.neo4jLabel || 'Entity');
+      const sentenceLabel = toSentenceCase(rawLabel);
+      const color = getEntityColor(rawLabel);
       
-      if (nodeLabel.includes('COMPANY') || nodeLabel.includes('BUSINESS')) color = colors.primary;
-      else if (nodeLabel.includes('PERSON') || nodeLabel.includes('RESEARCHER')) color = colors.person;
-      else if (nodeLabel.includes('PROJECT') || nodeLabel.includes('TECHNOLOGY')) color = colors.project;
-      else if (nodeLabel.includes('LOCATION') || nodeLabel.includes('EVENT')) color = colors.location;
-      else if (nodeLabel.includes('DISEASE') || nodeLabel.includes('MEDICAL')) color = colors.medical;
-      else if (nodeLabel.includes('PLANT') || nodeLabel.includes('HERB')) color = colors.herb;
-      else if (nodeLabel.includes('COMPOUND') || nodeLabel.includes('CHEMICAL')) color = colors.compound;
-
-      const categoryIndex = uniqueLabels.indexOf(nodeLabel);
+      const categoryIndex = uniqueLabelsRaw.indexOf(rawLabel);
 
       const { [ 'label' as any ]: _ignored, ...cleanNode } = node;
       
@@ -67,7 +53,7 @@ export const NexusGraph2D: React.FC<Props> = ({ data, onNodeClick, onLinkClick, 
           show: data.nodes.length < 80,
           position: 'right',
           formatter: '{b}',
-          color: '#1a1a1a', // Dark text for light background
+          color: '#1a1a1a', 
           fontSize: 11,
           fontWeight: 'black',
           textBorderColor: '#ffffff',
@@ -77,19 +63,19 @@ export const NexusGraph2D: React.FC<Props> = ({ data, onNodeClick, onLinkClick, 
       };
     });
 
-    // 4. Map Links
+    // 3. Map Links
     const links = data.links.map(link => ({
       ...link,
       source: String(typeof link.source === 'object' ? link.source.id : link.source),
       target: String(typeof link.target === 'object' ? link.target.id : link.target),
       lineStyle: {
-        color: colors.link,
+        color: 'rgba(100, 116, 139, 0.3)',
         curveness: layoutMode === 'radial' ? 0.3 : 0.1,
         width: 1.5
       },
       emphasis: {
         lineStyle: {
-          color: colors.primary,
+          color: '#10B981',
           width: 3,
           opacity: 1
         }
@@ -100,34 +86,25 @@ export const NexusGraph2D: React.FC<Props> = ({ data, onNodeClick, onLinkClick, 
       backgroundColor: 'transparent',
       animationDuration: 1500,
       animationEasingUpdate: 'quinticInOut',
-      legend: {
-        show: true,
-        bottom: 20,
-        left: 'center',
-        orient: 'horizontal',
-        textStyle: { color: colors.text, fontSize: 10, fontWeight: 'bold' },
-        itemWidth: 10,
-        itemHeight: 10,
-        icon: 'circle',
-        data: categories.map(c => c.name)
-      },
+      legend: { show: false },
       tooltip: {
         trigger: 'item',
         backgroundColor: 'rgba(255, 255, 255, 0.95)',
-        borderColor: colors.primary,
+        borderColor: '#10B981',
         borderWidth: 1,
         padding: 0,
         extraCssText: 'box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-radius: 12px; overflow: hidden;',
         formatter: (params: any) => {
           if (params.dataType === 'node') {
             const n = params.data;
+            const label = toSentenceCase(String(n.neo4jLabel || 'Entity'));
             return `
               <div style="padding: 12px; min-width: 160px; color: #1a1a1a;">
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                   <div style="width: 8px; height: 8px; border-radius: 50%; background: ${params.color};"></div>
                   <b style="font-size: 13px;">${n.name}</b>
                 </div>
-                <div style="color: ${colors.secondary}; font-size: 10px; font-weight: 900; opacity: 0.8; letter-spacing: 0.5px;">${String(n.neo4jLabel || 'ENTITY').toUpperCase()}</div>
+                <div style="color: #107B41; font-size: 10px; font-weight: 900; opacity: 0.8; letter-spacing: 0.5px;">${label.toUpperCase()}</div>
               </div>
             `;
           }
@@ -155,10 +132,10 @@ export const NexusGraph2D: React.FC<Props> = ({ data, onNodeClick, onLinkClick, 
           emphasis: {
             focus: 'adjacency',
             itemStyle: { scale: 1.2, shadowBlur: 20 },
-            lineStyle: { width: 4, opacity: 1, color: colors.primary }
+            lineStyle: { width: 4, opacity: 1, color: '#10B981' }
           },
           lineStyle: {
-            color: colors.link,
+            color: 'rgba(100, 116, 139, 0.3)',
             width: 1.5,
             curveness: layoutMode === 'radial' ? 0.3 : 0.1,
             type: 'solid'

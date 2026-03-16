@@ -118,6 +118,11 @@ export const nexusApi = {
         const response = await api.get(url);
         return response.data;
     },
+    getNeighbors: async (nodeId: string, folderSlug?: string) => {
+        const url = folderSlug ? `/graph/neighbors?node_id=${nodeId}&folder=${folderSlug}` : `/graph/neighbors?node_id=${nodeId}`;
+        const response = await api.get(url);
+        return response.data;
+    },
     getActivity: async () => {
         const response = await api.get('/graph/activity/');
         return response.data;

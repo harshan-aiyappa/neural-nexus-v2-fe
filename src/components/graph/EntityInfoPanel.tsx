@@ -4,6 +4,7 @@ import { LuX, LuInfo, LuExternalLink, LuDatabase, LuActivity, LuBrainCircuit } f
 import gsap from 'gsap';
 import { NexusGraph2D } from './2d/NexusGraph2D';
 import { nexusApi } from '@/services/api';
+import { toSentenceCase } from '@/utils/graphColors';
 
 interface EntityInfo {
     id: string;
@@ -95,7 +96,7 @@ export const EntityInfoPanel = ({
             maxH="calc(100vh - 48px)" // Fix for 768px screens
         >
             {/* Header */}
-            <Box p={5} borderBottom="1px solid" borderColor="border.muted">
+            <Box p={5} borderBottom="1px solid" borderColor="border.muted" bg="bg.surface/40">
                 <HStack justifyContent="space-between" mb={2}>
                     <Badge colorPalette={isNode ? "teal" : "purple"} variant="solid" rounded="md" textTransform="uppercase" fontSize="10px">
                         {isNode ? "Entity Node" : "Relationship"}
@@ -104,12 +105,15 @@ export const EntityInfoPanel = ({
                         <LuX />
                     </IconButton>
                 </HStack>
-                <Heading size="md" fontWeight="black" letterSpacing="tight" truncate color="fg">
+                <Heading size="md" fontWeight="black" letterSpacing="tight" color="fg" wordBreak="break-word">
                     {entity.name || entity.id || entity.type}
                 </Heading>
-                <Text fontSize="10px" fontWeight="black" color="jungle-teal" letterSpacing="widest" mt={1}>
-                    ID: {entity.id || 'N/A'}
-                </Text>
+                <VStack align="start" gap={0} mt={1}>
+                    <Text fontSize="9px" fontWeight="black" color="jungle-teal" letterSpacing="widest">SYSTEM ID</Text>
+                    <Text fontSize="9px" fontWeight="bold" color="fg.muted" wordBreak="break-all" opacity={0.6}>
+                        {entity.id}
+                    </Text>
+                </VStack>
             </Box>
 
             {/* Content */}
@@ -167,13 +171,13 @@ export const EntityInfoPanel = ({
                 )}
 
                 {/* Visual Identity */}
-                <HStack spaceX={4} p={4} bg="bg.muted/50" rounded="2xl" border="1px solid" borderColor="border.subtle">
+                <HStack gap={4} p={4} bg="bg.muted/50" rounded="2xl" border="1px solid" borderColor="border.subtle">
                     <Circle size="10" bg={isNode ? "jungle-teal" : "purple.500"} shadow="lg">
                         <Icon as={isNode ? LuInfo : LuActivity} color="white" />
                     </Circle>
-                    <VStack align="start" spaceY={0}>
+                    <VStack align="start" gap={0}>
                         <Text fontSize="xs" fontWeight="black" color="fg.muted">TYPE</Text>
-                        <Text fontSize="sm" fontWeight="black" color="fg">{displayLabel}</Text>
+                        <Text fontSize="sm" fontWeight="black" color="fg">{toSentenceCase(displayLabel || 'Entity')}</Text>
                     </VStack>
                 </HStack>
 
@@ -194,26 +198,31 @@ export const EntityInfoPanel = ({
                     )}
 
                     {!analysisReport ? (
-                        <Box display="grid" gridTemplateColumns="1fr 1fr" gap={3}>
-                            {entity.properties && Object.entries(entity.properties).map(([key, value]) => (
-                                <Box 
-                                    key={key}
-                                    p={3} 
-                                    bg="bg.muted" 
-                                    rounded="xl" 
-                                    border="1px solid" 
-                                    borderColor="border.muted"
-                                    display="flex"
-                                    flexDirection="column"
-                                    spaceY={1}
-                                >
-                                    <Text fontSize="9px" fontWeight="black" color="fg.muted" textTransform="uppercase" letterSpacing="wide">{key.replace(/_/g, ' ')}</Text>
-                                    <Text fontSize="xs" fontWeight="bold" color="fg" truncate>
-                                        {typeof value === 'object' ? '...' : String(value)}
-                                    </Text>
-                                </Box>
-                            ))}
-                        </Box>
+                        <VStack align="stretch" gap={3}>
+                            {entity.properties && Object.entries(entity.properties).map(([key, value]) => {
+                                // Filter out noisy keys
+                                if (['id', 'name', 'scientific_name', 'embedding'].includes(key.toLowerCase())) return null;
+                                
+                                return (
+                                    <Box 
+                                        key={key}
+                                        p={4} 
+                                        bg="bg.muted/40" 
+                                        rounded="2xl" 
+                                        border="1px solid" 
+                                        borderColor="border.subtle"
+                                        display="flex"
+                                        flexDirection="column"
+                                        gap={1}
+                                    >
+                                        <Text fontSize="9px" fontWeight="black" color="jungle-teal" letterSpacing="widest">{key.replace(/_/g, ' ').toUpperCase()}</Text>
+                                        <Text fontSize="xs" fontWeight="bold" color="fg" lineHeight="tall">
+                                            {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                                        </Text>
+                                    </Box>
+                                );
+                            })}
+                        </VStack>
                     ) : (
                         <VStack align="stretch" p={4} bg="turf-green/5" border="1px solid" borderColor="turf-green/20" rounded="2xl" spaceY={3}>
                             <HStack color="turf-green">
@@ -263,7 +272,7 @@ export const EntityInfoPanel = ({
                     rounded="xl" 
                     fontWeight="black" 
                     onClick={handleDeepAnalyze}
-                    isLoading={isAnalyzing}
+                    loading={isAnalyzing}
                     loadingText="ANALYZING..."
                     isDisabled={!isNode}
                     _hover={{ bg: "jungle-teal" }}

@@ -254,6 +254,59 @@ export const Settings = () => {
                         <ConfigToggle label="GDS Projections" description="Community detection analytics" />
                     </SimpleGrid>
                 </VStack>
+
+                {/* Graph Visual Preferences */}
+                <VStack align="stretch" gap={6} className="settings-panel">
+                    <HStack gap={2}>
+                        <LuLayers color="var(--chakra-colors-jungle-teal)" />
+                        <Text fontWeight="black" fontSize="sm" letterSpacing="widest">VISUAL PREFERENCES</Text>
+                    </HStack>
+
+                    <Box bg="bg.surface" p={6} rounded="3xl" border="1px solid" borderColor="border.subtle">
+                        <SimpleGrid columns={{ base: 1, md: 2 }} gap={10}>
+                            <VStack align="stretch" gap={4}>
+                                <Text fontSize="xs" fontWeight="black" color="fg.muted">TOPOLOGY ENGINE RENDERER</Text>
+                                <HStack justifyContent="space-between">
+                                    <Text fontSize="sm" fontWeight="bold">Node Scale Factor</Text>
+                                    <Badge colorPalette="teal">1.2x</Badge>
+                                </HStack>
+                                <HStack justifyContent="space-between">
+                                    <Text fontSize="sm" fontWeight="bold">Relationship Curveness</Text>
+                                    <Badge colorPalette="teal">0.15</Badge>
+                                </HStack>
+                                <HStack justifyContent="space-between">
+                                    <Text fontSize="sm" fontWeight="bold">Text Resolution</Text>
+                                    <Badge colorPalette="teal">High</Badge>
+                                </HStack>
+                            </VStack>
+                            <VStack align="stretch" gap={4}>
+                                <Text fontSize="xs" fontWeight="black" color="fg.muted">OVERLAY & EFFECTS</Text>
+                                <ConfigToggle label="Glassmorphism UI" description="Advanced backdrop blur effects" active />
+                                <ConfigToggle label="Dynamic Animations" description="GSAP orchestrated transitions" active />
+                            </VStack>
+                        </SimpleGrid>
+                    </Box>
+                </VStack>
+
+                {/* Keybindings Management */}
+                <VStack align="stretch" gap={6} className="settings-panel">
+                    <HStack gap={2}>
+                        <LuTerminal color="var(--chakra-colors-jungle-teal)" />
+                        <Text fontWeight="black" fontSize="sm" letterSpacing="widest">KEYBOARD SHORTCUTS</Text>
+                    </HStack>
+
+                    <Box bg="bg.surface" p={6} rounded="3xl" border="1px solid" borderColor="border.subtle" overflow="hidden">
+                        <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} gap={4}>
+                            <ShortcutItem keys={['Shift', 'F']} label="Toggle Filter Panel" />
+                            <ShortcutItem keys={['Ctrl', 'G']} label="Switch Graph View" />
+                            <ShortcutItem keys={['Shift', 'S']} label="Open Sunburst View" />
+                            <ShortcutItem keys={['Ctrl', 'K']} label="Global Command Search" />
+                            <ShortcutItem keys={['Esc']} label="Close Panels / Reset" />
+                            <ShortcutItem keys={['/']} label="Focus Search" />
+                        </SimpleGrid>
+                    </Box>
+                </VStack>
+
             </VStack>
         </Box>
     );
@@ -283,3 +336,27 @@ const ConfigToggle = ({ label, description, active = false }: any) => (
         <Circle size="4" bg={active ? "jungle-teal" : "border.muted"} shadow={active ? "0 0 10px var(--chakra-colors-jungle-teal)" : "none"} />
     </HStack>
 );
+
+const ShortcutItem = ({ keys, label }: { keys: string[], label: string }) => (
+    <HStack p={4} bg="bg.muted/50" rounded="2xl" border="1px solid" borderColor="border.subtle" justifyContent="space-between">
+        <Text fontSize="xs" fontWeight="bold">{label}</Text>
+        <HStack gap={1}>
+            {keys.map((k, i) => (
+                <React.Fragment key={i}>
+                    <Kbd>{k}</Kbd>
+                    {i < keys.length - 1 && <Text fontSize="xs">+</Text>}
+                </React.Fragment>
+            ))}
+        </HStack>
+    </HStack>
+);
+
+const Kbd = ({ children }: { children: React.ReactNode }) => (
+    <Box 
+        px={2} py={1} bg="bg.surface" border="1px solid" borderColor="border.subtle" 
+        rounded="md" fontSize="10px" fontWeight="black" shadow="sm" minW="30px" textAlign="center"
+    >
+        {children}
+    </Box>
+);
+

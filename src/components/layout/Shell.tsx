@@ -12,7 +12,10 @@ import {
     LuSettings, 
     LuLogOut, 
     LuUser,
-    LuActivity
+    LuActivity,
+    LuZap,
+    LuLibrary,
+    LuNetwork
 } from 'react-icons/lu';
 import { useState, useRef, useEffect } from 'react';
 import gsap from 'gsap';
@@ -128,11 +131,12 @@ export const Shell = ({ children, userEmail }: { children: React.ReactNode, user
 
     const navItems = [
         { icon: LuLayoutDashboard, label: 'Overview', path: '/dashboard' },
-        { icon: LuSearch, label: 'Discovery', path: '/discovery' },
+        { icon: LuNetwork, label: 'Visualizations', path: '/discovery' },
         { icon: LuActivity, label: 'Analytics', path: '/analytics' },
-        { icon: LuDatabase, label: 'Library', path: '/library' },
+        { icon: LuLibrary, label: 'Library', path: '/library' },
+        { icon: LuMessageSquare, label: 'Intelligence', path: '/chat' },
+        { icon: LuZap, label: 'ML Pipeline', path: '/ml-pipeline' },
         { icon: LuSettings, label: 'Settings', path: '/settings' },
-        { icon: LuMessageSquare, label: 'Nexus AI', path: '/chat' },
     ];
 
     return (
