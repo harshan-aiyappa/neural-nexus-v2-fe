@@ -168,7 +168,7 @@ export const Shell = ({ children, userEmail }: { children: React.ReactNode, user
                         </HStack>
 
                         {/* Navigation */}
-                        <VStack align="stretch" spaceY={1} flex={1}>
+                        <VStack align="stretch" spaceY={1} flex={1} overflowY="auto" className="custom-scrollbar" pr={isCollapsed ? 0 : 2}>
                             {navItems.map((item, index) => (
                                 <SidebarItem 
                                     key={index} 
