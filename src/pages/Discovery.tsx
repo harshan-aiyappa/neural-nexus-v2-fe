@@ -248,7 +248,7 @@ export const Discovery = ({ layoutMode = 'network' }: { layoutMode?: 'network' |
                                 <Text cursor="pointer" fontSize="9px" color="fg.muted" fontWeight="bold" onClick={() => setActiveLabels([])}>NONE</Text>
                             </HStack>
                         </HStack>
-                        <Box maxH="220px" overflowY="auto" pr={2}>
+                        <Box maxH="280px" overflowY="auto" pr={2} className="custom-scrollbar">
                             <VStack align="stretch" gap={1.5}>
                                 {Object.keys(nodeCounts).sort().map((label, idx) => (
                                     <HStack
@@ -279,7 +279,7 @@ export const Discovery = ({ layoutMode = 'network' }: { layoutMode?: 'network' |
                         <HStack justifyContent="space-between">
                             <Text fontSize="10px" fontWeight="black" color="turf-green">RELATIONSHIP MODELS</Text>
                         </HStack>
-                        <Box maxH="220px" overflowY="auto" pr={2}>
+                        <Box maxH="320px" overflowY="auto" pr={2} className="custom-scrollbar">
                             <VStack align="stretch" gap={1.5}>
                                 {Object.keys(relCounts).sort().map(type => (
                                     <HStack
