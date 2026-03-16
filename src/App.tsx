@@ -64,10 +64,12 @@ function App() {
                     <Route path="/" element={<Navigate to="/dashboard" replace />} />
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/library" element={<Library />} />
+                    <Route path="/library/:slug" element={<Library />} />
                     <Route path="/upload" element={<DataUpload />} />
                     <Route path="/discovery" element={<Discovery layoutMode="network" />} />
-                    <Route path="/discovery/tree" element={<Discovery layoutMode="tree" />} />
-                    <Route path="/discovery/radial" element={<Discovery layoutMode="radial" />} />
+                    <Route path="/discovery/:slug" element={<Discovery layoutMode="network" />} />
+                    <Route path="/discovery/tree/:slug" element={<Discovery layoutMode="tree" />} />
+                    <Route path="/discovery/radial/:slug" element={<Discovery layoutMode="radial" />} />
                     <Route path="/chat" element={<Chat />} />
                     <Route path="/dashboard/audit" element={<AuditLog />} />
                     <Route path="/analytics" element={<AnalyticsGallery />} />

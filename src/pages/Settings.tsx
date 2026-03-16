@@ -46,16 +46,40 @@ export const Settings = () => {
         });
     }, []);
 
+    const [isVerifying, setIsVerifying] = useState(false);
+    const [verificationResult, setVerificationResult] = useState<{success: boolean, message: string} | null>(null);
+
+    const handleVerifyKey = async () => {
+        if (!apiKey) return;
+        setIsVerifying(true);
+        setVerificationResult(null);
+        try {
+            const res = await nexusApi.verifyApiKey(apiKey);
+            setVerificationResult({ success: true, message: res.message });
+        } catch (error: any) {
+            const msg = error.response?.data?.detail || 'Validation failed';
+            setVerificationResult({ success: false, message: msg });
+        } finally {
+            setIsVerifying(false);
+        }
+    };
+
     const handleSaveKey = async () => {
         setLoading(true);
         try {
+            // Optional: verify before saving if not already verified
+            if (!verificationResult?.success) {
+                const check = await nexusApi.verifyApiKey(apiKey);
+                if (!check.success) throw new Error("Key verification failed");
+            }
             await nexusApi.updateApiKey('GEMINI_API_KEY', apiKey);
             await fetchStatus();
             setApiKey('');
+            setVerificationResult(null);
             alert('API Key synchronized. Cognitive engine re-provisioned.');
-        } catch (error) {
-            console.error(error);
-            alert('Authentication synchronization failed.');
+        } catch (error: any) {
+            const msg = error.response?.data?.detail || error.message || 'Authentication synchronization failed.';
+            alert(msg);
         } finally {
             setLoading(false);
         }
@@ -108,21 +132,39 @@ export const Settings = () => {
                             />
                             <IntegrityCard 
                                 label="Knowledge Graph" 
-                                value="Neo4j Aura" 
-                                status="CONNECTED" 
-                                color="green"
+                                value="Neo4j" 
+                                status={status?.neo4j === 'ACTIVE' ? 'CONNECTED' : 'DISCONNECTED'} 
+                                color={status?.neo4j === 'ACTIVE' ? 'green' : 'red'}
                                 icon={LuDatabase}
+                            />
+                            <IntegrityCard 
+                                label="Metadata Store" 
+                                value="MongoDB" 
+                                status={status?.mongodb === 'ACTIVE' ? 'ONLINE' : 'OFFLINE'} 
+                                color={status?.mongodb === 'ACTIVE' ? 'green' : 'red'}
+                                icon={LuActivity}
+                            />
+                            <IntegrityCard 
+                                label="Cache Engine" 
+                                value="Redis" 
+                                status={status?.redis === 'ACTIVE' ? 'ACTIVE' : 'OFFLINE'} 
+                                color={status?.redis === 'ACTIVE' ? 'green' : 'red'}
+                                icon={LuTerminal}
                             />
                         </SimpleGrid>
 
                         {/* Status Message */}
-                        {status?.gemini !== 'ACTIVE' && (
-                            <Box p={4} bg="red.500/10" border="1px solid" borderColor="red.500/20" rounded="2xl">
+                        {status && (status.gemini !== 'ACTIVE' || status.neo4j !== 'ACTIVE') && (
+                            <Box p={4} bg="red.500/10" border="1px solid" borderColor="red.500/20" rounded="2xl" animation="pulse 2s infinite">
                                 <HStack gap={3} color="red.500">
                                     <LuLoaderCircle className="animate-spin" />
                                     <VStack align="start" gap={0}>
-                                        <Text fontWeight="black" fontSize="xs">COGNITIVE DECAPITATION</Text>
-                                        <Text fontSize="10px">Advanced extraction is offline. Please rotate API credentials.</Text>
+                                        <Text fontWeight="black" fontSize="xs">SYSTEM DEGRADATION DETECTED</Text>
+                                        <Text fontSize="10px">
+                                            {status.gemini !== 'ACTIVE' ? '• Gemini API key expired or invalid. ' : ''}
+                                            {status.neo4j !== 'ACTIVE' ? '• Neo4j connection lost. ' : ''}
+                                            Check terminal logs for details.
+                                        </Text>
                                     </VStack>
                                 </HStack>
                             </Box>
@@ -140,17 +182,37 @@ export const Settings = () => {
                             <VStack align="stretch" gap={6}>
                                 <Field.Root>
                                     <Field.Label fontSize="xs" fontWeight="black" color="fg.muted">GEMINI API ACCESS KEY</Field.Label>
-                                    <Input 
-                                        type="password"
-                                        placeholder="AIzaSy... (Click to rotate)"
-                                        value={apiKey}
-                                        onChange={(e) => setApiKey(e.target.value)}
-                                        bg="bg.muted"
-                                        border="none"
-                                        rounded="xl"
-                                        p={6}
-                                        _focus={{ ring: 2, ringColor: "jungle-teal" }}
-                                    />
+                                    <HStack w="full" gap={2}>
+                                        <Input 
+                                            type="password"
+                                            placeholder="AIzaSy... (Click to rotate)"
+                                            value={apiKey}
+                                            onChange={(e) => setApiKey(e.target.value)}
+                                            bg="bg.muted"
+                                            border="none"
+                                            rounded="xl"
+                                            p={6}
+                                            flex={1}
+                                            _focus={{ ring: 2, ringColor: "jungle-teal" }}
+                                        />
+                                        <Button 
+                                            h="50px" 
+                                            px={6} 
+                                            variant="outline" 
+                                            rounded="xl" 
+                                            fontWeight="black" 
+                                            colorPalette="teal"
+                                            onClick={handleVerifyKey}
+                                            loading={isVerifying}
+                                        >
+                                            VERIFY
+                                        </Button>
+                                    </HStack>
+                                    {verificationResult && (
+                                        <Text fontSize="10px" mt={2} color={verificationResult.success ? "green.500" : "red.500"} fontWeight="bold">
+                                            {verificationResult.success ? "✅ " : "❌ "} {verificationResult.message}
+                                        </Text>
+                                    )}
                                     <Field.HelperText fontSize="9px" color="fg.muted" mt={2}>
                                         <HStack gap={2}>
                                             <LuShieldCheck />
@@ -168,7 +230,7 @@ export const Settings = () => {
                                     fontWeight="black"
                                     onClick={handleSaveKey}
                                     loading={loading}
-                                    disabled={!apiKey}
+                                    disabled={!apiKey || (verificationResult !== null && !verificationResult.success)}
                                     _hover={{ bg: 'turf-green', transform: 'translateY(-2px)' }}
                                     transition="all 0.3s"
                                 >

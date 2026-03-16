@@ -188,6 +188,19 @@ export const DataUpload = () => {
                             transition="all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
                             cursor="pointer" 
                             onClick={() => fileInputRef.current?.click()} 
+                            onDragOver={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                            }}
+                            onDrop={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const file = e.dataTransfer.files?.[0];
+                                if (file) {
+                                    const event = { target: { files: [file] } } as any;
+                                    handleFileUpload(event);
+                                }
+                            }}
                             shadow="premium"
                             className="upload-card"
                         >

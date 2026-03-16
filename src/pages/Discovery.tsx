@@ -7,12 +7,14 @@ import { NexusGraph2D } from '@/components/graph/2d/NexusGraph2D';
 import { EntityInfoPanel } from '@/components/graph/EntityInfoPanel';
 import { nexusApi } from '@/services/api';
 import gsap from 'gsap';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useParams, useNavigate } from 'react-router-dom';
 
 const LabelText = ({ label }: { label: string }) => {
     return <Text fontSize="10px" fontWeight="black" color="fg">{label.toUpperCase()}</Text>;
 };
 export const Discovery = ({ layoutMode = 'network' }: { layoutMode?: 'network' | 'tree' | 'radial' }) => {
+    const { slug: pathSlug } = useParams();
+    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const { isSidebarCollapsed: _isSidebarCollapsed, selectedFolderSlug, setSelectedFolderSlug } = useNexusStore();
     
@@ -31,18 +33,30 @@ export const Discovery = ({ layoutMode = 'network' }: { layoutMode?: 'network' |
 
     const borderColor = "border.subtle";
 
-    // Sync search param with store
+    // Sync search param / path param with store
     useEffect(() => {
-        const folderParam = searchParams.get('folder');
-        if (folderParam) {
-            setSelectedFolderSlug(folderParam);
-        } else if (folders.length > 0 && !selectedFolderSlug) {
-            setSelectedFolderSlug(folders[0].slug);
+        // Only run logic if we have folders loaded
+        if (folders.length === 0) return;
+
+        const urlSlug = pathSlug || searchParams.get('folder');
+        
+        if (urlSlug) {
+            // If URL has a slug and it's different from the store, update store
+            if (urlSlug !== selectedFolderSlug) {
+                setSelectedFolderSlug(urlSlug);
+            }
+        } else if (!selectedFolderSlug) {
+            // If no slug in URL and none in store, default to first folder
+            const defaultSlug = folders[0].slug;
+            setSelectedFolderSlug(defaultSlug);
+            // Don't navigate here immediately to avoid loop, let the store update settle
         }
 
         const highlightParam = searchParams.get('highlight');
-        if (highlightParam) setSearchTerm(highlightParam);
-    }, [searchParams, folders, selectedFolderSlug]);
+        if (highlightParam && highlightParam !== searchTerm) {
+            setSearchTerm(highlightParam);
+        }
+    }, [pathSlug, searchParams, folders, selectedFolderSlug]); // Removed 'navigate' and stabilized conditions
 
     // TanStack Query for Graph Data
     const { data: graphData = { nodes: [], links: [] }, isLoading: _isGraphLoading } = useQuery({
@@ -84,7 +98,7 @@ export const Discovery = ({ layoutMode = 'network' }: { layoutMode?: 'network' |
     const legendRef = useRef(null);
 
     const handleFolderChange = (slug: string) => {
-        setSelectedFolderSlug(slug);
+        navigate(`/discovery/${slug}`);
     };
 
     // Filter Logic

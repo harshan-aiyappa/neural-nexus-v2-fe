@@ -132,6 +132,10 @@ export const nexusApi = {
         const response = await api.get('/settings/status');
         return response.data;
     },
+    verifyApiKey: async (value: string) => {
+        const response = await api.post('/settings/verify-key', { key_value: value });
+        return response.data;
+    },
 
     // Analytics (Phase 14)
     getAnalyticsFlow: async () => {

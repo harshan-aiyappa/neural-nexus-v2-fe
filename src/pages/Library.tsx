@@ -2,15 +2,27 @@ import { Box, Heading, Text, VStack, Button, SimpleGrid, Badge, HStack, Circle, 
 import { LuFolder, LuSearch, LuZap, LuNetwork, LuClock, LuPlus, LuExternalLink, LuSearchCode, LuArrowLeft } from 'react-icons/lu';
 import { useState, useEffect, useMemo } from 'react';
 import { nexusApi, Node } from '@/services/api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { LibrarySkeleton } from '@/components/ui/SkeletonLoaders';
 import gsap from 'gsap';
 
 export const Library = () => {
     const navigate = useNavigate();
+    const { slug } = useParams();
     const [searchQuery, setSearchQuery] = useState('');
     const [folders, setFolders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+
+    // Sync browse state with URL slug
+    useEffect(() => {
+        if (slug) {
+            setBrowseFolder(slug);
+            setIsBrowsing(true);
+        } else {
+            setIsBrowsing(false);
+            setBrowseFolder('');
+        }
+    }, [slug]);
 
     // Browse Data State
     const [isBrowsing, setIsBrowsing] = useState(false);
@@ -140,7 +152,7 @@ export const Library = () => {
                             position="relative" cursor="pointer" transition="all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
                             className="library-folder-card"
                             _hover={{ transform: 'translateY(-6px)', borderColor: 'brand-emerald/40', shadow: ' premium' }}
-                            onClick={() => { setBrowseFolder(folder.slug); setIsBrowsing(true); }}
+                            onClick={() => { navigate(`/library/${folder.slug}`); }}
                         >
                             <VStack align="stretch" spaceY={4}>
                                 <HStack justifyContent="space-between">
@@ -197,7 +209,7 @@ export const Library = () => {
     const renderBrowseView = () => (
         <VStack align="start" spaceY={6} w="full">
             <HStack spaceX={4} pt={2}>
-                <Button variant="ghost" rounded="full" onClick={() => { setIsBrowsing(false); setVisibleLimit(50); }} color="fg.muted" _hover={{ bg: "bg.muted" }}>
+                <Button variant="ghost" rounded="full" onClick={() => { navigate('/library'); setVisibleLimit(50); }} color="fg.muted" _hover={{ bg: "bg.muted" }}>
                     <LuArrowLeft /> <Text ml={2} fontSize="sm" fontWeight="black">Back to Topics</Text>
                 </Button>
             </HStack>
@@ -208,7 +220,7 @@ export const Library = () => {
                         <Circle size="8" bg="brand-emerald/10" color="brand-emerald"><LuFolder /></Circle>
                         <select
                             value={browseFolder}
-                            onChange={(e) => { setBrowseFolder(e.target.value); setVisibleLimit(50); }}
+                            onChange={(e) => { navigate(`/library/${e.target.value}`); setVisibleLimit(50); }}
                             style={{ background: 'transparent', color: 'var(--chakra-colors-fg)', fontSize: '15px', fontWeight: '900', outline: 'none', border: 'none', cursor: 'pointer' }}
                         >
                             {folders.map(f => (
