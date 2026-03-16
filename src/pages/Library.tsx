@@ -295,7 +295,7 @@ export const Library = () => {
     );
 
     return (
-        <Box p={8} w="full">
+        <Box h="full" overflowY="auto" p={8} w="full" className="custom-scrollbar">
             <VStack align="start" spaceY={8} w="full">
                 <VStack align="start" spaceY={2} w="full">
                     <HStack justifyContent="space-between" w="full">

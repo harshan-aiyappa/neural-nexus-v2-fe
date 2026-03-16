@@ -69,7 +69,7 @@ export const Dashboard = () => {
     if (loading) return <Box p={8}><DashboardSkeleton /></Box>;
 
     return (
-        <Box px={8} py={10} ref={containerRef}>
+        <Box h="full" overflowY="auto" px={8} py={10} ref={containerRef} className="custom-scrollbar">
             <VStack align="start" spaceY={10} w="full">
                 {/* Header Section */}
                 <HStack justifyContent="space-between" w="full" className="dash-card">

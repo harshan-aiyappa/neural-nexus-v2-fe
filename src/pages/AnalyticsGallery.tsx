@@ -107,7 +107,7 @@ export const AnalyticsGallery = () => {
     }, [selectedView, flowData, radarMetrics]);
 
     return (
-        <Box p={8} maxW="1600px" mx="auto" ref={containerRef}>
+        <Box h="full" overflowY="auto" p={8} maxW="1600px" mx="auto" ref={containerRef} className="custom-scrollbar">
             {/* Header */}
             <Flex justifyContent="space-between" align="end" mb={10}>
                 <VStack align="start" gap={1}>
@@ -154,7 +154,7 @@ export const AnalyticsGallery = () => {
             <Box 
                 className="gallery-card"
                 w="full" 
-                h="600px" 
+                h={{ base: "400px", xl: "600px" }} 
                 bg={cardBg} 
                 rounded="4xl" 
                 border="1px solid" 
