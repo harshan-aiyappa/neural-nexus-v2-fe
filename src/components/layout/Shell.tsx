@@ -12,7 +12,8 @@ import {
     LuSettings, 
     LuLogOut, 
     LuUser,
-    LuActivity
+    LuActivity,
+    LuUpload
 } from 'react-icons/lu';
 import { useState, useRef, useEffect } from 'react';
 import gsap from 'gsap';
@@ -131,6 +132,7 @@ export const Shell = ({ children, userEmail }: { children: React.ReactNode, user
         { icon: LuSearch, label: 'Discovery', path: '/discovery' },
         { icon: LuActivity, label: 'Analytics', path: '/analytics' },
         { icon: LuDatabase, label: 'Library', path: '/library' },
+        { icon: LuUpload, label: 'Ingestion', path: '/upload' },
         { icon: LuSettings, label: 'Settings', path: '/settings' },
         { icon: LuMessageSquare, label: 'Nexus AI', path: '/chat' },
     ];

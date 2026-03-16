@@ -224,11 +224,38 @@ export const DataUpload = () => {
                         </Flex>
 
                         <Box w="full" p={6} bg="turf-green/5" rounded="2xl" border="1px solid" borderColor="turf-green/20" className="upload-card">
-                            <HStack spaceX={3}>
-                                <LuSparkles color="var(--chakra-colors-turf-green)" />
-                                <Text fontSize="10px" fontWeight="black" color="fg" letterSpacing="widest">PRO TIP</Text>
-                            </HStack>
-                            <Text fontSize="11px" color="fg.muted" mt={2} fontWeight="bold">Use MERGE instead of CREATE to ensure entity identity preservation during multi-file ingestion.</Text>
+                            <VStack align="start" spaceY={4}>
+                                <HStack spaceX={3}>
+                                    <LuSparkles color="var(--chakra-colors-turf-green)" />
+                                    <Text fontSize="10px" fontWeight="black" color="fg" letterSpacing="widest">AI PROCESSING</Text>
+                                </HStack>
+                                <Text fontSize="11px" color="fg.muted" fontWeight="bold">
+                                    If you ingested data via direct Cypher file, run our high-dimensional embedding engine to enable semantic chat.
+                                </Text>
+                                <Button 
+                                    size="sm" 
+                                    w="full" 
+                                    bg="jungle-teal" 
+                                    color="white" 
+                                    rounded="xl" 
+                                    fontWeight="black" 
+                                    fontSize="xs"
+                                    onClick={async () => {
+                                        setIsUploading(true);
+                                        try {
+                                            const res = await nexusApi.processEmbeddings(selectedFolder);
+                                            setStatus({ type: 'success', message: res.message });
+                                        } catch (e: any) {
+                                            setStatus({ type: 'error', message: e.response?.data?.detail || 'Process failed' });
+                                        } finally {
+                                            setIsUploading(false);
+                                        }
+                                    }}
+                                    loading={isUploading}
+                                >
+                                    GENERATE VECTORS
+                                </Button>
+                            </VStack>
                         </Box>
                     </VStack>
                 </HStack>

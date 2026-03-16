@@ -103,6 +103,12 @@ export const nexusApi = {
         const response = await api.post('/ingest/cypher', { cypher, folder_id: folderId });
         return response.data;
     },
+    processEmbeddings: async (folderId?: string) => {
+        const formData = new FormData();
+        if (folderId) formData.append('folder_id', folderId);
+        const response = await api.post('/ingest/process-embeddings', formData);
+        return response.data;
+    },
 
     // Discovery & Stats
     chat: async (message: string, contextFolder?: string) => {
