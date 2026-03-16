@@ -145,5 +145,14 @@ export const nexusApi = {
     getAnalyticsMetrics: async () => {
         const response = await api.get('/analytics/metrics');
         return response.data;
+    },
+    deepAnalyze: async (nodeId: string, folderSlug?: string, nodeName?: string, nodeLabel?: string) => {
+        const response = await api.post('/graph/deep-analyze', { 
+            node_id: nodeId, 
+            folder_slug: folderSlug,
+            node_name: nodeName,
+            node_label: nodeLabel
+        });
+        return response.data;
     }
 };

@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { Box, VStack, HStack, Text, Heading, IconButton, Badge, Circle, Icon, Flex, Button } from '@chakra-ui/react';
-import { LuX, LuInfo, LuExternalLink, LuDatabase, LuActivity } from 'react-icons/lu';
+import { Box, VStack, HStack, Text, Heading, IconButton, Badge, Circle, Icon, Flex, Button, Spinner } from '@chakra-ui/react';
+import { LuX, LuInfo, LuExternalLink, LuDatabase, LuActivity, LuBrainCircuit } from 'react-icons/lu';
 import gsap from 'gsap';
 import { NexusGraph2D } from './2d/NexusGraph2D';
+import { nexusApi } from '@/services/api';
 
 interface EntityInfo {
     id: string;
@@ -25,16 +26,48 @@ export const EntityInfoPanel = ({
     onClose: () => void 
 }) => {
     const panelRef = useRef<HTMLDivElement>(null);
+    const scrollRef = useRef<HTMLDivElement>(null);
     const [vizMode, setVizMode] = useState<'network' | 'radial'>('network');
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [analysisReport, setAnalysisReport] = useState<string | null>(null);
 
     useEffect(() => {
         if (entity) {
+            setAnalysisReport(null);
+            setIsAnalyzing(false);
             gsap.fromTo(panelRef.current, 
                 { x: 400, opacity: 0 }, 
                 { x: 0, opacity: 1, duration: 0.5, ease: "expo.out" }
             );
         }
     }, [entity?.id]);
+
+    const handleDeepAnalyze = async () => {
+        if (!entity || isAnalyzing) return;
+        setIsAnalyzing(true);
+        try {
+            // Extract folder slug from URL if possible, otherwise rely on backend resolution
+            const folderSlug = window.location.pathname.split('/').pop();
+            const res = await nexusApi.deepAnalyze(
+                entity.id, 
+                folderSlug, 
+                entity.name || entity.id,
+                entity.neo4jLabel || entity.label
+            );
+            setAnalysisReport(res.report);
+            
+            // Auto-scroll to report
+            setTimeout(() => {
+                if (scrollRef.current) {
+                    scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
+                }
+            }, 100);
+        } catch (e) {
+            console.error("Deep analysis failed:", e);
+        } finally {
+            setIsAnalyzing(false);
+        }
+    };
 
     if (!entity) return null;
 
@@ -59,6 +92,7 @@ export const EntityInfoPanel = ({
             overflow="hidden"
             display="flex"
             flexDirection="column"
+            maxH="calc(100vh - 48px)" // Fix for 768px screens
         >
             {/* Header */}
             <Box p={5} borderBottom="1px solid" borderColor="border.muted">
@@ -66,7 +100,7 @@ export const EntityInfoPanel = ({
                     <Badge colorPalette={isNode ? "teal" : "purple"} variant="solid" rounded="md" textTransform="uppercase" fontSize="10px">
                         {isNode ? "Entity Node" : "Relationship"}
                     </Badge>
-                    <IconButton size="xs" variant="ghost" onClick={onClose} rounded="full" _hover={{ bg: "white/10" }}>
+                    <IconButton size="xs" aria-label="Close" variant="ghost" onClick={onClose} rounded="full" _hover={{ bg: "white/10" }}>
                         <LuX />
                     </IconButton>
                 </HStack>
@@ -79,7 +113,7 @@ export const EntityInfoPanel = ({
             </Box>
 
             {/* Content */}
-            <VStack align="stretch" p={5} spaceY={6} flex={1} overflowY="auto">
+            <VStack ref={scrollRef} align="stretch" p={5} spaceY={6} flex={1} overflowY="auto" className="custom-scrollbar">
                 {/* Local Neighborhood Preview */}
                 <Box position="relative" h="200px" w="full" bg="bg.muted/50" rounded="2xl" border="1px solid" borderColor="border.subtle" overflow="hidden">
                     <Flex position="absolute" top={3} left={3} right={3} zIndex={1} justifyContent="space-between" align="start">
@@ -159,28 +193,40 @@ export const EntityInfoPanel = ({
                         </Box>
                     )}
 
-                    <Box display="grid" gridTemplateColumns="1fr 1fr" gap={3}>
-                        {entity.properties && Object.entries(entity.properties).map(([key, value]) => (
-                            <Box 
-                                key={key}
-                                p={3} 
-                                bg="bg.muted" 
-                                rounded="xl" 
-                                border="1px solid" 
-                                borderColor="border.muted"
-                                display="flex"
-                                flexDirection="column"
-                                spaceY={1}
-                            >
-                                <Text fontSize="9px" fontWeight="black" color="fg.muted" textTransform="uppercase" letterSpacing="wide">{key.replace(/_/g, ' ')}</Text>
-                                <Text fontSize="xs" fontWeight="bold" color="fg" truncate>
-                                    {typeof value === 'object' ? '...' : String(value)}
-                                </Text>
-                            </Box>
-                        ))}
-                    </Box>
+                    {!analysisReport ? (
+                        <Box display="grid" gridTemplateColumns="1fr 1fr" gap={3}>
+                            {entity.properties && Object.entries(entity.properties).map(([key, value]) => (
+                                <Box 
+                                    key={key}
+                                    p={3} 
+                                    bg="bg.muted" 
+                                    rounded="xl" 
+                                    border="1px solid" 
+                                    borderColor="border.muted"
+                                    display="flex"
+                                    flexDirection="column"
+                                    spaceY={1}
+                                >
+                                    <Text fontSize="9px" fontWeight="black" color="fg.muted" textTransform="uppercase" letterSpacing="wide">{key.replace(/_/g, ' ')}</Text>
+                                    <Text fontSize="xs" fontWeight="bold" color="fg" truncate>
+                                        {typeof value === 'object' ? '...' : String(value)}
+                                    </Text>
+                                </Box>
+                            ))}
+                        </Box>
+                    ) : (
+                        <VStack align="stretch" p={4} bg="turf-green/5" border="1px solid" borderColor="turf-green/20" rounded="2xl" spaceY={3}>
+                            <HStack color="turf-green">
+                                <LuBrainCircuit />
+                                <Text fontSize="11px" fontWeight="black">DEEP REASONING OUTPUT</Text>
+                            </HStack>
+                            <Text fontSize="xs" color="fg" lineHeight="tall" whiteSpace="pre-wrap">
+                                {analysisReport}
+                            </Text>
+                        </VStack>
+                    )}
 
-                    {(!entity.properties || Object.keys(entity.properties).length === 0) && (
+                    {(!analysisReport && (!entity.properties || Object.keys(entity.properties).length === 0)) && (
                         <Flex p={6} direction="column" align="center" justify="center" opacity={0.3}>
                             <Icon as={LuDatabase} size="lg" mb={2} />
                             <Text fontSize="xs" fontWeight="bold">No structured metadata</Text>
@@ -188,7 +234,7 @@ export const EntityInfoPanel = ({
                     )}
                 </VStack>
 
-                {!isNode && (
+                {!isNode && !analysisReport && (
                     <VStack align="stretch" spaceY={4}>
                         <Text fontSize="10px" fontWeight="black" color="jungle-teal" letterSpacing="widest">CONNECTION</Text>
                         <HStack justifyContent="space-between" p={3} bg="bg.muted" rounded="xl">
@@ -208,8 +254,21 @@ export const EntityInfoPanel = ({
 
             {/* Footer */}
             <Box p={5} borderTop="1px solid" borderColor="border.muted" bg="bg.muted/20">
-                <Button w="full" variant="solid" colorPalette="teal" size="sm" rounded="xl" fontWeight="black">
-                    DEEP ANALYZE
+                <Button 
+                    w="full" 
+                    variant="solid" 
+                    bg="turf-green" 
+                    color="white"
+                    size="sm" 
+                    rounded="xl" 
+                    fontWeight="black" 
+                    onClick={handleDeepAnalyze}
+                    isLoading={isAnalyzing}
+                    loadingText="ANALYZING..."
+                    isDisabled={!isNode}
+                    _hover={{ bg: "jungle-teal" }}
+                >
+                    {isAnalyzing ? <Spinner size="xs" /> : "DEEP ANALYZE"}
                 </Button>
             </Box>
         </Box>
