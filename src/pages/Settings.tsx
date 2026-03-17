@@ -38,13 +38,24 @@ export const Settings = () => {
 
     useEffect(() => {
         fetchStatus();
-        gsap.from(".settings-panel", {
-            opacity: 0,
-            y: 20,
-            stagger: 0.1,
-            duration: 0.8,
-            ease: "power3.out"
+        
+        // Stabilized entrance animation
+        const ctx = gsap.context(() => {
+            gsap.fromTo(".settings-panel", 
+                { opacity: 0, y: 30 },
+                { 
+                    opacity: 1, 
+                    y: 0, 
+                    stagger: 0.1, 
+                    duration: 1, 
+                    ease: "power4.out",
+                    delay: 0.4, // Wait for Shell animation to complete
+                    clearProps: "all" 
+                }
+            );
         });
+
+        return () => ctx.revert();
     }, []);
 
     const [isVerifying, setIsVerifying] = useState(false);
@@ -303,7 +314,7 @@ export const Settings = () => {
                         <Text fontWeight="black" fontSize="sm" letterSpacing="widest">KEYBOARD SHORTCUTS</Text>
                     </HStack>
 
-                    <Box bg="bg.surface" p={6} rounded="3xl" border="1px solid" borderColor="border.subtle" overflow="hidden">
+                    <Box bg="bg.surface" p={6} rounded="3xl" border="1px solid" borderColor="border.subtle" overflow="hidden" shadow="md">
                         <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} gap={4}>
                             <ShortcutItem keys={['Shift', 'F']} label="Toggle Filter Panel" />
                             <ShortcutItem keys={['Ctrl', 'G']} label="Switch Graph View" />
@@ -321,38 +332,38 @@ export const Settings = () => {
 };
 
 const IntegrityCard = ({ label, value, status, color, icon }: any) => (
-    <Box p={5} bg="bg.surface" rounded="3xl" border="1px solid" borderColor="border.subtle" shadow="lg" transition="all 0.3s" _hover={{ transform: 'translateY(-4px)', shadow: '2xl', borderColor: 'jungle-teal/30' }}>
+    <Box p={5} bg="bg.surface" rounded="3xl" border="1px solid" borderColor="border.subtle" shadow="md" transition="all 0.3s" _hover={{ transform: 'translateY(-4px)', shadow: 'xl', borderColor: 'jungle-teal/50' }}>
         <VStack align="start" gap={3}>
-            <Circle size="10" bg={`${color}.500/10`}>
+            <Circle size="10" bg={`${color}.500/15`}>
                 <Icon as={icon} color={`${color}.500`} />
             </Circle>
             <VStack align="start" gap={0}>
-                <Text fontSize="9px" fontWeight="black" color="fg.muted" letterSpacing="widest">{label.toUpperCase()}</Text>
-                <Text fontSize="sm" fontWeight="black" color="fg">{value}</Text>
+                <Text fontSize="10px" fontWeight="black" color="fg.muted" letterSpacing="widest">{label.toUpperCase()}</Text>
+                <Text fontSize="md" fontWeight="black" color="fg">{value}</Text>
             </VStack>
-            <Badge colorPalette={color} variant="solid" rounded="md" fontSize="9px" px={2}>{status}</Badge>
+            <Badge colorPalette={color} variant="solid" rounded="md" fontSize="10px" px={2} fontWeight="bold">{status}</Badge>
         </VStack>
     </Box>
 );
 
 const ConfigToggle = ({ label, description, active = false }: any) => (
-    <HStack p={5} bg="bg.surface" rounded="3xl" border="1px solid" borderColor={active ? "jungle-teal/30" : "border.subtle"} shadow="md" cursor="pointer" transition="all 0.3s" _hover={{ bg: 'bg.muted' }}>
+    <HStack p={5} bg="bg.surface" rounded="3xl" border="1px solid" borderColor={active ? "jungle-teal/50" : "border.subtle"} shadow="sm" cursor="pointer" transition="all 0.3s" _hover={{ bg: 'bg.muted' }}>
         <VStack align="start" gap={0} flex={1}>
             <Text fontSize="xs" fontWeight="black" color="fg">{label}</Text>
-            <Text fontSize="10px" color="fg.muted">{description}</Text>
+            <Text fontSize="11px" color="fg.muted" fontWeight="600">{description}</Text>
         </VStack>
         <Circle size="4" bg={active ? "jungle-teal" : "border.muted"} shadow={active ? "0 0 10px var(--chakra-colors-jungle-teal)" : "none"} />
     </HStack>
 );
 
 const ShortcutItem = ({ keys, label }: { keys: string[], label: string }) => (
-    <HStack p={4} bg="bg.muted/50" rounded="2xl" border="1px solid" borderColor="border.subtle" justifyContent="space-between">
-        <Text fontSize="xs" fontWeight="bold">{label}</Text>
+    <HStack p={4} bg="bg.muted/30" rounded="2xl" border="1px solid" borderColor="border.subtle" justifyContent="space-between">
+        <Text fontSize="xs" fontWeight="800" color="fg">{label}</Text>
         <HStack gap={1}>
             {keys.map((k, i) => (
                 <React.Fragment key={i}>
                     <Kbd>{k}</Kbd>
-                    {i < keys.length - 1 && <Text fontSize="xs">+</Text>}
+                    {i < keys.length - 1 && <Text fontSize="xs" color="fg.muted">+</Text>}
                 </React.Fragment>
             ))}
         </HStack>
