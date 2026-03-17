@@ -2,7 +2,7 @@ import {
     Box, VStack, HStack, Heading, Text, Icon, Button, Badge, 
     Input, Field, Circle, SimpleGrid, Separator
 } from '@chakra-ui/react';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { nexusApi } from '@/services/api';
 import { 
     LuSettings, 
@@ -13,7 +13,8 @@ import {
     LuCpu,
     LuKey,
     LuTerminal,
-    LuActivity
+    LuActivity,
+    LuLayers
 } from 'react-icons/lu';
 import gsap from 'gsap';
 
@@ -96,7 +97,7 @@ export const Settings = () => {
                             <Heading size="3xl" fontWeight="black" color="fg">Core Configuration</Heading>
                         </HStack>
                         <Text color="jungle-teal" fontWeight="black" letterSpacing="widest" fontSize="xs">
-                            V2 ENGINE MANAGEMENT & SYSTEM INTEGRITY
+                            ENGINE MANAGEMENT & SYSTEM INTEGRITY
                         </Text>
                     </VStack>
                     <HStack gap={4}>

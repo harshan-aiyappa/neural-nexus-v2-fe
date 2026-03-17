@@ -165,7 +165,7 @@ export const Shell = ({ children, userEmail }: { children: React.ReactNode, user
                                 {!isCollapsed && (
                                     <VStack align="start" spaceY={0}>
                                         <Heading size="md" letterSpacing="tight" fontWeight="black" color="fg">NEXUS</Heading>
-                                        <Text fontSize="10px" fontWeight="black" color="turf-green" letterSpacing="widest">V2 CORE</Text>
+                                        <Text fontSize="10px" fontWeight="black" color="turf-green" letterSpacing="widest">CORE ENGINE</Text>
                                     </VStack>
                                 )}
                             </HStack>
