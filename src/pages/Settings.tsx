@@ -152,6 +152,13 @@ export const Settings = () => {
                                 color={status?.redis === 'ACTIVE' ? 'green' : 'red'}
                                 icon={LuTerminal}
                             />
+                            <IntegrityCard 
+                                label="Task Worker" 
+                                value="Celery" 
+                                status={status?.celery === 'ACTIVE' ? 'ACTIVE' : status?.celery === 'IDLE' ? 'IDLE' : 'OFFLINE'} 
+                                color={status?.celery === 'ACTIVE' ? 'green' : status?.celery === 'IDLE' ? 'yellow' : 'red'}
+                                icon={LuLoaderCircle}
+                            />
                         </SimpleGrid>
 
                         {/* Status Message */}
