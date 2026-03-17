@@ -84,8 +84,8 @@ export const Dashboard = () => {
                 {/* Header Section */}
                 <HStack justifyContent="space-between" w="full" className="dash-card">
                     <VStack align="start" gap={1}>
-                        <Text fontSize="10px" fontWeight="black" color="jungle-teal" letterSpacing="widest">PILLAR 01: SYSTEM STATUS</Text>
-                        <Heading size="3xl" fontWeight="black" letterSpacing="tight" color="fg">Overview</Heading>
+                        <Text fontSize="10px" fontWeight="800" color="jungle-teal" letterSpacing="0.3em" fontFamily="'Outfit', sans-serif">PILLAR 01: SYSTEM STATUS</Text>
+                        <Heading size="3xl" fontWeight="800" letterSpacing="tight" color="fg" fontFamily="'Outfit', sans-serif">Overview</Heading>
                     </VStack>
                     <HStack gap={3}>
                         <Button variant="ghost" size="sm" color="fg.muted" onClick={onOpen} _hover={{ bg: "bg.muted" }}>
@@ -101,10 +101,13 @@ export const Dashboard = () => {
                             shadow="premium" 
                             px={6} h="56px" 
                             onClick={() => navigate('/data-upload')}
-                            _hover={{ bg: 'brand.turf-2', transform: 'translateY(-2px)' }} 
+                            _hover={{ bg: 'brand.turf-2', transform: 'translateY(-2px)', shadow: 'glow' }} 
                             transition="all 0.2s"
+                            fontFamily="'Outfit', sans-serif"
+                            fontWeight="800"
+                            fontSize="sm"
                         >
-                            <LuPlus /> New Extraction
+                            <LuPlus /> NEW EXTRACTION
                         </Button>
                     </HStack>
                 </HStack>
@@ -113,37 +116,37 @@ export const Dashboard = () => {
 
                 {/* Primary Stats */}
                 <SimpleGrid columns={{ base: 1, md: 3 }} gap={6} w="full">
-                    <Box p={8} bg="bg.surface" rounded="3xl" border="1px solid" borderColor="border.subtle" shadow="xl" position="relative" overflow="hidden" className="dash-card">
-                        <Circle size="100px" bg="turf-green" opacity="0.03" position="absolute" top="-20px" right="-20px" />
+                    <Box p={8} className="dash-card glass-card" rounded="3xl" position="relative" overflow="hidden">
+                        <Circle size="120px" bg="turf-green" opacity="0.05" position="absolute" top="-30px" right="-30px" filter="blur(20px)" />
                         <Stat.Root>
-                            <Stat.Label color="fg.muted" fontWeight="black" fontSize="10px" letterSpacing="widest" textTransform="uppercase">Knowledge Nodes</Stat.Label>
-                            <Stat.ValueText fontSize="5xl" fontWeight="black" color="turf-green" my={2}>{stats.nodes.toLocaleString()}</Stat.ValueText>
+                            <Stat.Label color="fg.muted" fontWeight="800" fontSize="10px" letterSpacing="0.2em" textTransform="uppercase" fontFamily="'Outfit', sans-serif">Knowledge Nodes</Stat.Label>
+                            <Stat.ValueText fontSize="6xl" fontWeight="800" color="turf-green" my={2} fontFamily="'Outfit', sans-serif" letterSpacing="tighter">{stats.nodes.toLocaleString()}</Stat.ValueText>
                             <Stat.HelpText>
                                 <Stat.UpIndicator color="turf-green" />
-                                <Text as="span" fontWeight="bold" color="turf-green">{stats.growth}%</Text> expansion vs LW
+                                <Text as="span" fontWeight="800" color="turf-green" fontFamily="'Outfit', sans-serif">{stats.growth}%</Text> expansion vs LW
                             </Stat.HelpText>
                         </Stat.Root>
                     </Box>
 
-                    <Box p={8} bg="bg.surface" rounded="3xl" border="1px solid" borderColor="border.subtle" shadow="xl" position="relative" overflow="hidden" className="dash-card">
-                        <Circle size="100px" bg="jungle-teal" opacity="0.03" position="absolute" top="-20px" right="-20px" />
+                    <Box p={8} className="dash-card glass-card" rounded="3xl" position="relative" overflow="hidden">
+                        <Circle size="120px" bg="jungle-teal" opacity="0.05" position="absolute" top="-30px" right="-30px" filter="blur(20px)" />
                         <Stat.Root>
-                            <Stat.Label color="fg.muted" fontWeight="black" fontSize="10px" letterSpacing="widest" textTransform="uppercase">AI Extractions</Stat.Label>
-                            <Stat.ValueText fontSize="5xl" fontWeight="black" color="jungle-teal" my={2}>{stats.extractions.toLocaleString()}</Stat.ValueText>
+                            <Stat.Label color="fg.muted" fontWeight="800" fontSize="10px" letterSpacing="0.2em" textTransform="uppercase" fontFamily="'Outfit', sans-serif">AI Extractions</Stat.Label>
+                            <Stat.ValueText fontSize="6xl" fontWeight="800" color="jungle-teal" my={2} fontFamily="'Outfit', sans-serif" letterSpacing="tighter">{stats.extractions.toLocaleString()}</Stat.ValueText>
                             <Stat.HelpText>
                                 <Stat.UpIndicator color="turf-green" />
-                                <Text as="span" fontWeight="bold" color="turf-green">{stats.folders}</Text> active research folders
+                                <Text as="span" fontWeight="800" color="turf-green" fontFamily="'Outfit', sans-serif">{stats.folders}</Text> active research folders
                             </Stat.HelpText>
                         </Stat.Root>
                     </Box>
 
-                    <Box p={8} bg="bg.surface" rounded="3xl" border="1px solid" borderColor="border.subtle" shadow="xl" position="relative" overflow="hidden" className="dash-card">
-                        <Circle size="100px" bg="brand.turf-3" opacity="0.03" position="absolute" top="-20px" right="-20px" />
+                    <Box p={8} className="dash-card glass-card" rounded="3xl" position="relative" overflow="hidden">
+                        <Circle size="120px" bg="brand.turf-3" opacity="0.05" position="absolute" top="-30px" right="-30px" filter="blur(20px)" />
                         <Stat.Root>
-                            <Stat.Label color="fg.muted" fontWeight="black" fontSize="10px" letterSpacing="widest" textTransform="uppercase">Symmetry Integrity</Stat.Label>
-                            <Stat.ValueText fontSize="5xl" fontWeight="black" color="brand.turf-2" my={2}>{stats.integrity}%</Stat.ValueText>
+                            <Stat.Label color="fg.muted" fontWeight="800" fontSize="10px" letterSpacing="0.2em" textTransform="uppercase" fontFamily="'Outfit', sans-serif">Symmetry Integrity</Stat.Label>
+                            <Stat.ValueText fontSize="6xl" fontWeight="800" color="brand.turf-2" my={2} fontFamily="'Outfit', sans-serif" letterSpacing="tighter">{stats.integrity}%</Stat.ValueText>
                             <Stat.HelpText>
-                                <Badge colorPalette="green" bg="turf-green/10" color="turf-green" variant="subtle" rounded="md" fontSize="9px" fontWeight="black">GUARDIAN ACTIVE</Badge>
+                                <Badge colorPalette="green" bg="turf-green/10" color="turf-green" variant="subtle" rounded="md" fontSize="9px" fontWeight="800" fontFamily="'Outfit', sans-serif">GUARDIAN ACTIVE</Badge>
                             </Stat.HelpText>
                         </Stat.Root>
                     </Box>

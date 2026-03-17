@@ -88,7 +88,15 @@ const SidebarItem = ({ icon, label, to, isCollapsed }: SidebarItemProps) => {
                         <Icon as={icon} size="sm" />
                     </Box>
                     <Box ref={labelRef} flex={1} overflow="hidden">
-                        <Text fontSize="sm" fontWeight={isActive ? 'black' : 'bold'} whiteSpace="nowrap">{label}</Text>
+                        <Text 
+                            fontSize="xs" 
+                            fontWeight={isActive ? '800' : '600'} 
+                            fontFamily="'Outfit', sans-serif"
+                            letterSpacing="tight"
+                            whiteSpace="nowrap"
+                        >
+                            {label.toUpperCase()}
+                        </Text>
                     </Box>
                 </HStack>
             )}
@@ -163,9 +171,9 @@ export const Shell = ({ children, userEmail }: { children: React.ReactNode, user
                                     <img src={logoImg} alt="Nesso Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                                 </Box>
                                 {!isCollapsed && (
-                                    <VStack align="start" spaceY={0}>
-                                        <Heading size="md" letterSpacing="tight" fontWeight="black" color="fg">NEXUS</Heading>
-                                        <Text fontSize="10px" fontWeight="black" color="turf-green" letterSpacing="widest">CORE ENGINE</Text>
+                                    <VStack align="start" gap={0}>
+                                        <Heading size="md" letterSpacing="tight" fontWeight="800" fontFamily="'Outfit', sans-serif" color="fg">NEXUS</Heading>
+                                        <Text fontSize="10px" fontWeight="800" color="turf-green" letterSpacing="0.2em" fontFamily="'Outfit', sans-serif">CORE ENGINE</Text>
                                     </VStack>
                                 )}
                             </HStack>

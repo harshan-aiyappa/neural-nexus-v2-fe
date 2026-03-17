@@ -14,7 +14,7 @@ import { useSearchParams, useParams, useNavigate } from 'react-router-dom';
 import { getEntityColor, toSentenceCase } from '@/utils/graphColors';
 
 const LabelText = ({ label }: { label: string }) => {
-    return <Text fontSize="10px" fontWeight="black" color="fg">{label}</Text>;
+    return <Text fontSize="10px" fontWeight="800" color="fg" fontFamily="'Inter', sans-serif" letterSpacing="widest">{label.toUpperCase()}</Text>;
 };
 export const Discovery = ({ layoutMode = 'network' }: { layoutMode?: 'network' | 'tree' | 'radial' }) => {
     const { slug: pathSlug } = useParams();

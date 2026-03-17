@@ -90,17 +90,17 @@ export const EcosystemHighlights = ({ status, stats }: Props) => {
 };
 
 const HealthNode = ({ icon, label, status, color, subValue }: any) => (
-  <VStack align="start" p={4} bg="bg.canvas" rounded="2xl" border="1px solid" borderColor="border.subtle" transition="all 0.3s" _hover={{ borderColor: "turf-green/30", transform: "translateY(-2px)" }}>
+  <VStack align="start" p={5} className="glass-card" rounded="2xl" transition="all 0.3s" _hover={{ borderColor: "turf-green/50", transform: "translateY(-4px)" }}>
     <HStack gap={2} w="full">
-      <Circle size="6" bg={`${color}/10`} color={color}>
+      <Circle size="6" bg={`${color}/15`} color={color}>
         <Icon as={icon} size="xs" />
       </Circle>
-      <Text fontSize="10px" fontWeight="black" color="fg.muted" flex={1}>{label.toUpperCase()}</Text>
-      <Circle size="2" bg={color} shadow={`0 0 8px ${color}`} />
+      <Text fontSize="10px" fontWeight="800" color="fg.muted" flex={1} fontFamily="'Outfit', sans-serif" letterSpacing="widest">{label.toUpperCase()}</Text>
+      <Circle size="2" bg={color} shadow={`0 0 10px ${color}`} />
     </HStack>
-    <VStack align="start" gap={0} mt={2}>
-      <Text fontSize="xs" fontWeight="black" color="fg">{status}</Text>
-      <Text fontSize="9px" color="fg.subtle" fontWeight="black">{subValue}</Text>
+    <VStack align="start" gap={0} mt={3}>
+      <Text fontSize="sm" fontWeight="800" color="fg" fontFamily="'Inter', sans-serif">{status}</Text>
+      <Text fontSize="9px" color="fg.subtle" fontWeight="700" fontFamily="'Inter', sans-serif">{subValue}</Text>
     </VStack>
   </VStack>
 );

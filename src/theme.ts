@@ -40,6 +40,7 @@ export const system = createSystem(defaultConfig, {
             fonts: {
                 heading: { value: "'Outfit', sans-serif" },
                 body: { value: "'Inter', sans-serif" },
+                mono: { value: "'JetBrains Mono', monospace" }
             }
         },
         semanticTokens: {
