@@ -106,7 +106,7 @@ export const Login = ({ onLogin }: { onLogin: (email: string) => void }) => {
                     </Box>
                     <VStack gap={1} textAlign="center">
                         <Heading size="2xl" letterSpacing="tight" fontWeight="black" lineHeight="1" color="fg">Neural Nexus</Heading>
-                        <Text fontSize="10px" fontWeight="black" color="jungle-teal" letterSpacing="widest">V2 // {isRegister ? 'SYSTEM REGISTRATION' : 'GLOBAL ACCESS'}</Text>
+                        <Text fontSize="10px" fontWeight="black" color="jungle-teal" letterSpacing="widest">{isRegister ? 'SYSTEM REGISTRATION' : 'GLOBAL ACCESS'}</Text>
                     </VStack>
                 </VStack>
 

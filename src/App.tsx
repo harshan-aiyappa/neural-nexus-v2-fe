@@ -24,7 +24,7 @@ const PageLoader = () => (
     <Flex h="100vh" w="100vw" align="center" justify="center" bg="bg.canvas">
         <VStack gap={4}>
             <Spinner size="xl" color="jungle-teal" borderWidth="4px" />
-            <Text fontSize="xs" fontWeight="black" color="jungle-teal" letterSpacing="widest">INITIALIZING V2 ENGINE...</Text>
+            <Text fontSize="xs" fontWeight="black" color="jungle-teal" letterSpacing="widest">INITIALIZING ENGINE...</Text>
         </VStack>
     </Flex>
 );

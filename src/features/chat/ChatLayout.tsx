@@ -162,7 +162,7 @@ export const ChatLayout = () => {
                             <Heading size="md" fontWeight="black" letterSpacing="tight">Semantic Chat</Heading>
                             <HStack gap={2}>
                                 <Circle size="1.5" bg="brand-emerald" className="animate-pulse" />
-                                <Text fontSize="9px" fontWeight="black" color="brand-emerald" letterSpacing="widest">RAG ENGINE V2</Text>
+                                <Text fontSize="9px" fontWeight="black" color="brand-emerald" letterSpacing="widest">RAG ENGINE</Text>
                             </HStack>
                         </VStack>
                     </HStack>
