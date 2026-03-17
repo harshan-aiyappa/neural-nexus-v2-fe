@@ -89,7 +89,7 @@ const SidebarItem = ({ icon, label, to, isCollapsed }: SidebarItemProps) => {
                     </Box>
                     <Box ref={labelRef} flex={1} overflow="hidden">
                         <Text 
-                            fontSize="xs" 
+                            fontSize={{ base: "sm", md: "xs" }} 
                             fontWeight={isActive ? '800' : '600'} 
                             fontFamily="'Outfit', sans-serif"
                             letterSpacing="tight"

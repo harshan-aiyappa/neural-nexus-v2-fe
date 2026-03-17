@@ -167,8 +167,8 @@ export const Library = () => {
                                     <Badge variant="subtle" colorPalette="teal" rounded="full" px={3} fontSize="9px" fontWeight="black">SYNCED</Badge>
                                 </HStack>
                                 <VStack align="start" spaceY={1}>
-                                    <Heading size="md" fontWeight="black" color="fg">{folder.name}</Heading>
-                                    <Text fontSize="xs" color="fg.muted" truncate maxW="full" fontWeight="medium">{folder.description || 'No description provided'}</Text>
+                                    <Heading size={{ base: "sm", md: "md" }} fontWeight="black" color="fg">{folder.name}</Heading>
+                                    <Text fontSize={{ base: "10px", md: "xs" }} color="fg.muted" truncate maxW="full" fontWeight="medium">{folder.description || 'No description provided'}</Text>
                                 </VStack>
                                 <Box pt={4} borderTop="1px solid" borderColor="border.muted">
                                     <SimpleGrid columns={2} gap={4}>
@@ -300,8 +300,8 @@ export const Library = () => {
                 <VStack align="start" spaceY={2} w="full">
                     <HStack justifyContent="space-between" w="full">
                         <VStack align="start" spaceY={1}>
-                            <Heading size="3xl" fontWeight="black" color="fg" letterSpacing="tighter">Knowledge Library</Heading>
-                            <Text color="fg.muted" fontSize="sm" fontWeight="medium">Manage your scientific topics and explore entities contextually.</Text>
+                            <Heading size={{ base: "2xl", md: "3xl" }} fontWeight="black" color="fg" letterSpacing="tighter">Knowledge Library</Heading>
+                            <Text color="fg.muted" fontSize={{ base: "xs", md: "sm" }} fontWeight="medium">Manage your scientific topics and explore entities contextually.</Text>
                         </VStack>
                         {!isBrowsing && (
                             <Button bg="brand-emerald" color="white" h="60px" px={8} rounded="2xl" shadow="premium" onClick={handleCreateFolder} _hover={{ bg: "jungle-teal", transform: "translateY(-2px)" }}>

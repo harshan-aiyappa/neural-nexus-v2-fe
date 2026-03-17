@@ -107,87 +107,84 @@ export const AnalyticsGallery = () => {
     }, [selectedView, flowData, radarMetrics]);
 
     return (
-        <Box h="full" overflowY="auto" p={8} maxW="1600px" mx="auto" ref={containerRef} className="custom-scrollbar">
+        <Box h="full" overflowY="auto" p={{ base: 4, md: 8 }} w="full" ref={containerRef} className="custom-scrollbar">
             {/* Header */}
-            <Flex justifyContent="space-between" align="end" mb={10}>
-                <VStack align="start" gap={1}>
+            <Flex justifyContent="space-between" align={{ base: "start", md: "end" }} mb={10} direction={{ base: "column", md: "row" }} gap={6}>
+                <VStack align="start" gap={2}>
                     <HStack gap={3}>
-                        <Circle size="10" bg="jungle-teal/10" color="jungle-teal">
-                            <LuActivity size="20px" />
+                        <Circle size="12" bg="jungle-teal/10" color="jungle-teal" shadow="glow">
+                            <LuActivity size="24px" />
                         </Circle>
                         <VStack align="start" gap={0}>
-                            <Text fontSize="10px" fontWeight="black" color="jungle-teal" letterSpacing="widest">PILLAR 03: ADVANCED VISUALIZATION</Text>
-                            <Heading size="xl" fontWeight="black" letterSpacing="tight">Analytics</Heading>
+                            <Text fontSize={{ base: "xs", md: "10px" }} fontWeight="800" color="jungle-teal" letterSpacing="0.3em" fontFamily="'Outfit', sans-serif">PILLAR 03: ADVANCED VISUALIZATION</Text>
+                            <Heading size={{ base: "xl", md: "2xl" }} fontWeight="800" letterSpacing="tight" color="fg" fontFamily="'Outfit', sans-serif">Analytics</Heading>
                         </VStack>
                     </HStack>
-                    <Text color="fg.muted" fontSize="sm" maxW="600px">
+                    <Text color="fg.muted" fontSize="sm" maxW="600px" fontWeight="500" fontFamily="'Inter', sans-serif">
                         High-fidelity flow and relationship density analysis. 
                         Modernized with ECharts for industrial-grade data insights.
                     </Text>
                 </VStack>
-                <HStack gap={2} bg="bg.muted" p={1} rounded="2xl" border="1px solid" borderColor={borderColor}>
-                    <Button 
-                        size="sm" 
-                        variant={selectedView === 'sankey' ? 'solid' : 'ghost'} 
-                        colorPalette={selectedView === 'sankey' ? 'teal' : 'gray'}
-                        rounded="xl"
-                        onClick={() => setSelectedView('sankey')}
-                    >Sankey</Button>
-                    <Button 
-                        size="sm" 
-                        variant={selectedView === 'radar' ? 'solid' : 'ghost'} 
-                        colorPalette={selectedView === 'radar' ? 'teal' : 'gray'}
-                        rounded="xl"
-                        onClick={() => setSelectedView('radar')}
-                    >Radar</Button>
-                    <Button 
-                        size="sm" 
-                        variant={selectedView === 'treemap' ? 'solid' : 'ghost'} 
-                        colorPalette={selectedView === 'treemap' ? 'teal' : 'gray'}
-                        rounded="xl"
-                        onClick={() => setSelectedView('treemap')}
-                    >Treemap</Button>
+                <HStack gap={2} bg="bg.surface/40" backdropFilter="blur(16px)" p={1.5} rounded="2xl" border="1px solid" borderColor={borderColor}>
+                    {(['sankey', 'radar', 'treemap'] as const).map((view) => (
+                        <Button 
+                            key={view}
+                            size="sm" 
+                            variant={selectedView === view ? 'solid' : 'ghost'} 
+                            bg={selectedView === view ? 'turf-green' : 'transparent'}
+                            color={selectedView === view ? 'white' : 'fg.muted'}
+                            rounded="xl"
+                            onClick={() => setSelectedView(view)}
+                            _hover={{ bg: selectedView === view ? 'turf-green' : 'bg.muted' }}
+                            fontFamily="'Outfit', sans-serif"
+                            fontWeight="800"
+                            textTransform="capitalize"
+                        >{view}</Button>
+                    ))}
                 </HStack>
             </Flex>
 
             {/* Main Viz Area */}
             <Box 
-                className="gallery-card"
+                className="gallery-card glass-card"
                 w="full" 
-                h={{ base: "400px", xl: "600px" }} 
-                bg={cardBg} 
+                h={{ base: "450px", xl: "650px" }} 
                 rounded="4xl" 
-                border="1px solid" 
-                borderColor={borderColor} 
-                shadow="2xl"
                 position="relative"
                 overflow="hidden"
-                p={8}
+                p={{ base: 4, md: 8 }}
             >
                 <ErrorBoundary>
                     <Skeleton loading={isPageLoading} height="full" rounded="2xl" colorPalette="teal">
                         {hasSankeyCycle ? (
-                            <Flex h="full" align="center" justify="center" direction="column" gap={4}>
-                                <LuActivity size="40px" color="var(--chakra-colors-red-500)" />
-                                <Text fontWeight="black" color="red.500">CYCLES DETECTED IN FLOW DATA</Text>
-                                <Text fontSize="xs" color="fg.muted">Sankey visualization requires a acyclic graph. Switch to another view.</Text>
+                            <Flex h="full" align="center" justify="center" direction="column" gap={6} bg="bg.surface/40" rounded="3xl">
+                                <LuActivity size="48px" color="var(--chakra-colors-red-500)" />
+                                <VStack gap={1}>
+                                    <Text fontWeight="800" color="red.500" fontFamily="'Outfit', sans-serif">CYCLES DETECTED IN FLOW DATA</Text>
+                                    <Text fontSize="xs" color="fg.muted" fontWeight="600" fontFamily="'Inter', sans-serif">Sankey visualization requires a acyclic graph. Switch to another view.</Text>
+                                </VStack>
                             </Flex>
                         ) : (
-                            <ReactECharts option={chartOption} style={{ height: '100%', width: '100%' }} />
+                            <Box h="full" w="full" position="relative">
+                                <ReactECharts option={chartOption} style={{ height: '100%', width: '100%' }} />
+                            </Box>
                         )}
                     </Skeleton>
                 </ErrorBoundary>
             </Box>
 
             {/* Algorithms Suite */}
-            <VStack align="start" gap={6} mt={12}>
-                <HStack gap={3}>
-                    <Circle size="8" bg="jungle-teal/10" color="jungle-teal">
-                        <LuBox size="18px" />
+            <VStack align="start" gap={8} mt={16}>
+                <HStack gap={4}>
+                    <Circle size="10" bg="turf-green/10" color="turf-green" shadow="glow">
+                        <LuBox size="22px" />
                     </Circle>
-                    <Heading size="md" fontWeight="black">Algorithmic Workspace (Manual Explore)</Heading>
+                    <VStack align="start" gap={0}>
+                        <Text fontSize="10px" fontWeight="800" color="fg.muted" letterSpacing="0.2em" fontFamily="'Outfit', sans-serif">GDS SUITE</Text>
+                        <Heading size="md" fontWeight="800" fontFamily="'Outfit', sans-serif">Algorithmic Workspace</Heading>
+                    </VStack>
                 </HStack>
-                <SimpleGrid columns={{ base: 1, md: 3, xl: 4 }} gap={4} w="full">
+                <SimpleGrid columns={{ base: 1, sm: 2, md: 3, xl: 4 }} gap={5} w="full">
                     {[
                         "Degree Centrality", "PageRank", "Betweenness", "Closeness", 
                         "Label Propagation", "Weakly Connected Components", "Louvain", 
@@ -197,42 +194,49 @@ export const AnalyticsGallery = () => {
                         <Box 
                             key={algo} 
                             p={5} 
-                            bg="bg.surface" 
+                            bg="bg.surface/40" 
                             rounded="2xl" 
                             border="1px solid" 
                             borderColor={borderColor}
-                            _hover={{ borderColor: "jungle-teal", transform: "translateY(-2px)", shadow: " premium" }}
-                            transition="all 0.2s"
+                            backdropFilter="blur(12px)"
+                            _hover={{ borderColor: "turf-green", transform: "translateY(-4px)", bg: "bg.muted", shadow: " premium" }}
+                            transition="all 0.3s cubic-bezier(0.19, 1, 0.22, 1)"
                             cursor="pointer"
+                            position="relative"
+                            overflow="hidden"
                         >
-                            <HStack justifyContent="space-between">
-                                <Text fontSize="xs" fontWeight="black">{algo.toUpperCase()}</Text>
-                                <Button size="xs" variant="ghost" color="jungle-teal">Run</Button>
+                            <HStack justifyContent="space-between" position="relative" zIndex={2}>
+                                <Text fontSize="xs" fontWeight="800" fontFamily="'Outfit', sans-serif" color="fg">{algo.toUpperCase()}</Text>
+                                <Button size="xs" variant="ghost" color="turf-green" fontWeight="800" fontSize="10px" _hover={{ bg: "turf-green/10" }}>RUN <LuActivity style={{ marginLeft: '4px' }} /></Button>
                             </HStack>
+                            <Box position="absolute" bottom="-10px" right="-10px" opacity="0.05" transform="rotate(-15deg)">
+                                <LuBox size="60px" />
+                            </Box>
                         </Box>
                     ))}
                 </SimpleGrid>
             </VStack>
 
             {/* Secondary Insights */}
-            <SimpleGrid columns={{ base: 1, md: 3 }} gap={8} mt={12}>
+            <SimpleGrid columns={{ base: 1, md: 3 }} gap={8} mt={16}>
                 {[
-                    { title: "Flow Density", value: "0.84", icon: LuActivity },
-                    { title: "Clustering Coefficient", value: "0.421", icon: LuLayers },
-                    { title: "Network Modularity", value: "0.58", icon: LuBox },
+                    { title: "Flow Density", value: "0.84", icon: LuActivity, color: "jungle-teal" },
+                    { title: "Clustering Coefficient", value: "0.421", icon: LuLayers, color: "turf-green" },
+                    { title: "Network Modularity", value: "0.58", icon: LuBox, color: "brand.turf-2" },
                 ].map((insight, idx) => (
-                    <Box key={idx} className="gallery-card" bg={cardBg} p={6} rounded="3xl" border="1px solid" borderColor={borderColor}>
-                        <HStack gap={4} mb={4}>
-                            <Circle size="8" bg="jungle-teal/10" color="jungle-teal">
-                                <Icon as={insight.icon} fontSize="lg" />
+                    <Box key={idx} className="gallery-card glass-card" p={8} rounded="3xl" position="relative" overflow="hidden">
+                        <Circle size="100px" bg={insight.color} opacity="0.05" position="absolute" top="-20px" right="-20px" filter="blur(20px)" />
+                        <HStack gap={4} mb={6}>
+                            <Circle size="10" bg={`${insight.color}/10`} color={insight.color}>
+                                <Icon as={insight.icon} fontSize="xl" />
                             </Circle>
-                            <Text fontSize="10px" fontWeight="black" color="fg.muted" letterSpacing="widest">{insight.title.toUpperCase()}</Text>
+                            <Text fontSize="10px" fontWeight="800" color="fg.muted" letterSpacing="0.25em" textTransform="uppercase" fontFamily="'Outfit', sans-serif">{insight.title}</Text>
                         </HStack>
-                        <Skeleton loading={isPageLoading} height="1.5rem" mb={2}>
-                            <Heading size="lg" fontWeight="black" color="fg">{insight.value}</Heading>
+                        <Skeleton loading={isPageLoading} height="2.5rem" mb={3}>
+                            <Heading size="3xl" fontWeight="800" color="fg" fontFamily="'Outfit', sans-serif" letterSpacing="tight">{insight.value}</Heading>
                         </Skeleton>
-                        <Text fontSize="xs" color="fg.muted" mt={2}>
-                            Calculated across folder context.
+                        <Text fontSize="xs" color="fg.muted" mt={2} fontWeight="600" fontFamily="'Inter', sans-serif">
+                            Calculated across active folder context.
                         </Text>
                     </Box>
                 ))}

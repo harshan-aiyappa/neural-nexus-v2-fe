@@ -56,6 +56,32 @@
     font-family: 'Outfit', sans-serif;
     @apply tracking-tight font-semibold;
   }
+
+  /* Global Modern Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #020403;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(81, 142, 109, 0.2);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(16, 123, 65, 0.4);
+  }
+
+  /* Firefox Scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(81, 142, 109, 0.2) #020403;
+  }
 }
 
 @layer utilities {

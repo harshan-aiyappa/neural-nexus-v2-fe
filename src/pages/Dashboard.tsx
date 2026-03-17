@@ -84,8 +84,8 @@ export const Dashboard = () => {
                 {/* Header Section */}
                 <HStack justifyContent="space-between" w="full" className="dash-card">
                     <VStack align="start" gap={1}>
-                        <Text fontSize="10px" fontWeight="800" color="jungle-teal" letterSpacing="0.3em" fontFamily="'Outfit', sans-serif">PILLAR 01: SYSTEM STATUS</Text>
-                        <Heading size="3xl" fontWeight="800" letterSpacing="tight" color="fg" fontFamily="'Outfit', sans-serif">Overview</Heading>
+                        <Text fontSize={{ base: "xs", md: "10px" }} fontWeight="800" color="jungle-teal" letterSpacing="0.3em" fontFamily="'Outfit', sans-serif">PILLAR 01: SYSTEM STATUS</Text>
+                        <Heading size={{ base: "2xl", md: "3xl" }} fontWeight="800" letterSpacing="tight" color="fg" fontFamily="'Outfit', sans-serif">Overview</Heading>
                     </VStack>
                     <HStack gap={3}>
                         <Button variant="ghost" size="sm" color="fg.muted" onClick={onOpen} _hover={{ bg: "bg.muted" }}>
@@ -119,11 +119,11 @@ export const Dashboard = () => {
                     <Box p={8} className="dash-card glass-card" rounded="3xl" position="relative" overflow="hidden">
                         <Circle size="120px" bg="turf-green" opacity="0.05" position="absolute" top="-30px" right="-30px" filter="blur(20px)" />
                         <Stat.Root>
-                            <Stat.Label color="fg.muted" fontWeight="800" fontSize="10px" letterSpacing="0.2em" textTransform="uppercase" fontFamily="'Outfit', sans-serif">Knowledge Nodes</Stat.Label>
-                            <Stat.ValueText fontSize="6xl" fontWeight="800" color="turf-green" my={2} fontFamily="'Outfit', sans-serif" letterSpacing="tighter">{stats.nodes.toLocaleString()}</Stat.ValueText>
+                            <Stat.Label color="fg.muted" fontWeight="800" fontSize={{ base: "xs", md: "10px" }} letterSpacing="0.2em" textTransform="uppercase" fontFamily="'Outfit', sans-serif">Knowledge Nodes</Stat.Label>
+                            <Stat.ValueText fontSize={{ base: "4xl", md: "6xl" }} fontWeight="800" color="turf-green" my={2} fontFamily="'Outfit', sans-serif" letterSpacing="tighter">{stats.nodes.toLocaleString()}</Stat.ValueText>
                             <Stat.HelpText>
                                 <Stat.UpIndicator color="turf-green" />
-                                <Text as="span" fontWeight="800" color="turf-green" fontFamily="'Outfit', sans-serif">{stats.growth}%</Text> expansion vs LW
+                                <Text as="span" fontWeight="800" color="turf-green" fontSize="xs" fontFamily="'Outfit', sans-serif">{stats.growth}%</Text> expansion vs LW
                             </Stat.HelpText>
                         </Stat.Root>
                     </Box>
@@ -131,11 +131,11 @@ export const Dashboard = () => {
                     <Box p={8} className="dash-card glass-card" rounded="3xl" position="relative" overflow="hidden">
                         <Circle size="120px" bg="jungle-teal" opacity="0.05" position="absolute" top="-30px" right="-30px" filter="blur(20px)" />
                         <Stat.Root>
-                            <Stat.Label color="fg.muted" fontWeight="800" fontSize="10px" letterSpacing="0.2em" textTransform="uppercase" fontFamily="'Outfit', sans-serif">AI Extractions</Stat.Label>
-                            <Stat.ValueText fontSize="6xl" fontWeight="800" color="jungle-teal" my={2} fontFamily="'Outfit', sans-serif" letterSpacing="tighter">{stats.extractions.toLocaleString()}</Stat.ValueText>
+                            <Stat.Label color="fg.muted" fontWeight="800" fontSize={{ base: "xs", md: "10px" }} letterSpacing="0.2em" textTransform="uppercase" fontFamily="'Outfit', sans-serif">AI Extractions</Stat.Label>
+                            <Stat.ValueText fontSize={{ base: "4xl", md: "6xl" }} fontWeight="800" color="jungle-teal" my={2} fontFamily="'Outfit', sans-serif" letterSpacing="tighter">{stats.extractions.toLocaleString()}</Stat.ValueText>
                             <Stat.HelpText>
                                 <Stat.UpIndicator color="turf-green" />
-                                <Text as="span" fontWeight="800" color="turf-green" fontFamily="'Outfit', sans-serif">{stats.folders}</Text> active research folders
+                                <Text as="span" fontWeight="800" color="turf-green" fontSize="xs" fontFamily="'Outfit', sans-serif">{stats.folders}</Text> active research folders
                             </Stat.HelpText>
                         </Stat.Root>
                     </Box>
@@ -143,10 +143,10 @@ export const Dashboard = () => {
                     <Box p={8} className="dash-card glass-card" rounded="3xl" position="relative" overflow="hidden">
                         <Circle size="120px" bg="brand.turf-3" opacity="0.05" position="absolute" top="-30px" right="-30px" filter="blur(20px)" />
                         <Stat.Root>
-                            <Stat.Label color="fg.muted" fontWeight="800" fontSize="10px" letterSpacing="0.2em" textTransform="uppercase" fontFamily="'Outfit', sans-serif">Symmetry Integrity</Stat.Label>
-                            <Stat.ValueText fontSize="6xl" fontWeight="800" color="brand.turf-2" my={2} fontFamily="'Outfit', sans-serif" letterSpacing="tighter">{stats.integrity}%</Stat.ValueText>
+                            <Stat.Label color="fg.muted" fontWeight="800" fontSize={{ base: "xs", md: "10px" }} letterSpacing="0.2em" textTransform="uppercase" fontFamily="'Outfit', sans-serif">Symmetry Integrity</Stat.Label>
+                            <Stat.ValueText fontSize={{ base: "4xl", md: "6xl" }} fontWeight="800" color="brand.turf-2" my={2} fontFamily="'Outfit', sans-serif" letterSpacing="tighter">{stats.integrity}%</Stat.ValueText>
                             <Stat.HelpText>
-                                <Badge colorPalette="green" bg="turf-green/10" color="turf-green" variant="subtle" rounded="md" fontSize="9px" fontWeight="800" fontFamily="'Outfit', sans-serif">GUARDIAN ACTIVE</Badge>
+                                <Badge colorPalette="green" bg="turf-green/10" color="turf-green" variant="subtle" rounded="md" fontSize={{ base: "10px", md: "9px" }} fontWeight="800" fontFamily="'Outfit', sans-serif">GUARDIAN ACTIVE</Badge>
                             </Stat.HelpText>
                         </Stat.Root>
                     </Box>

@@ -14,7 +14,7 @@ import { useSearchParams, useParams, useNavigate } from 'react-router-dom';
 import { getEntityColor, toSentenceCase } from '@/utils/graphColors';
 
 const LabelText = ({ label }: { label: string }) => {
-    return <Text fontSize="10px" fontWeight="800" color="fg" fontFamily="'Inter', sans-serif" letterSpacing="widest">{label.toUpperCase()}</Text>;
+    return <Text fontSize={{ base: "xs", md: "10px" }} fontWeight="800" color="fg" fontFamily="'Inter', sans-serif" letterSpacing="widest">{label.toUpperCase()}</Text>;
 };
 export const Discovery = ({ layoutMode = 'network' }: { layoutMode?: 'network' | 'tree' | 'radial' }) => {
     const { slug: pathSlug } = useParams();
@@ -290,7 +290,7 @@ export const Discovery = ({ layoutMode = 'network' }: { layoutMode?: 'network' |
                             <Circle size="8" bg="turf-green/10" color="turf-green">
                                 <LuFilter size="14px" />
                             </Circle>
-                            <Heading size="xs" color="fg.muted" letterSpacing="2px" fontWeight="black">ENGINE FILTERS</Heading>
+                            <Heading size={{ base: "sm", md: "xs" }} color="fg.muted" letterSpacing="2px" fontWeight="black">ENGINE FILTERS</Heading>
                         </HStack>
                         <Button variant="ghost" size="xs" onClick={() => setShowFilters(false)} color="fg.muted" rounded="full">✕</Button>
                     </HStack>
