@@ -45,28 +45,21 @@ export const Discovery = ({ layoutMode = 'network' }: { layoutMode?: 'network' |
 
     // Sync search param / path param with store
     useEffect(() => {
-        // Only run logic if we have folders loaded
         if (folders.length === 0) return;
 
         const urlSlug = pathSlug || searchParams.get('folder');
         
-        if (urlSlug) {
-            // If URL has a slug and it's different from the store, update store
-            if (urlSlug !== selectedFolderSlug) {
-                setSelectedFolderSlug(urlSlug);
-            }
-        } else if (!selectedFolderSlug) {
-            // If no slug in URL and none in store, default to first folder
-            const defaultSlug = folders[0].slug;
-            setSelectedFolderSlug(defaultSlug);
-            // Don't navigate here immediately to avoid loop, let the store update settle
+        if (urlSlug && urlSlug !== selectedFolderSlug) {
+            setSelectedFolderSlug(urlSlug);
+        } else if (!urlSlug && !selectedFolderSlug && folders[0]) {
+            setSelectedFolderSlug(folders[0].slug);
         }
 
         const highlightParam = searchParams.get('highlight');
         if (highlightParam && highlightParam !== searchTerm) {
             setSearchTerm(highlightParam);
         }
-    }, [pathSlug, searchParams, folders, selectedFolderSlug]); // Removed 'navigate' and stabilized conditions
+    }, [pathSlug, searchParams, folders.length, selectedFolderSlug]); // Stabilized folders dependency
 
     // TanStack Query for Graph Data
     const { data: graphData = { nodes: [], links: [] }, isLoading: _isGraphLoading } = useQuery({
@@ -94,14 +87,25 @@ export const Discovery = ({ layoutMode = 'network' }: { layoutMode?: 'network' |
 
     // Sync graph data to local state on initial load or folder change
     useEffect(() => {
-        if (graphData.nodes.length > 0) {
+        if (!graphData || !graphData.nodes) return;
+        
+        const isNewFolder = selectedFolderSlug !== lastLoadedSlug.current;
+        const isEmptyAndDataArrived = localNodes.length === 0 && graphData.nodes.length > 0;
+
+        if (isNewFolder || isEmptyAndDataArrived) {
             setLocalNodes(graphData.nodes);
             setLocalLinks(graphData.links);
-        } else {
-            setLocalNodes([]);
-            setLocalLinks([]);
+            lastLoadedSlug.current = selectedFolderSlug;
+            
+            // Auto-activate all labels/types on fresh load
+            const labels = Array.from(new Set(graphData.nodes.map((n: any) => n.neo4jLabel || 'ENTITY'))) as string[];
+            const relTypes = Array.from(new Set(graphData.links.map((l: any) => l.type || 'RELATIONSHIP'))) as string[];
+            setActiveLabels(labels);
+            setActiveRelTypes(relTypes);
         }
-    }, [graphData]);
+    }, [graphData, selectedFolderSlug]); // Removed localNodes.length to stop the loop
+
+    const lastLoadedSlug = useRef<string | null>(null);
 
     const handleNodeExpand = async (node: any) => {
         if (!node || isExpanding) return;
@@ -320,29 +324,64 @@ export const Discovery = ({ layoutMode = 'network' }: { layoutMode?: 'network' |
                                 <Text cursor="pointer" fontSize="9px" color="fg.muted" fontWeight="bold" onClick={() => setActiveLabels([])}>NONE</Text>
                             </HStack>
                         </HStack>
-                        <Box maxH="280px" overflowY="auto" pr={2} className="custom-scrollbar">
+                    <Box maxH="280px" overflowY="auto" pr={2} className="custom-scrollbar">
                             <VStack align="stretch" gap={1.5}>
-                                {Object.keys(nodeCounts).sort().map((label, idx) => (
-                                    <HStack
-                                        key={label}
-                                        p={3}
-                                        rounded="xl"
-                                        bg={activeLabels.includes(label) ? "turf-green/5" : "transparent"}
-                                        border="1px solid"
-                                        borderColor={activeLabels.includes(label) ? "turf-green/20" : "transparent"}
-                                        _hover={{ bg: "bg.muted" }}
-                                        cursor="pointer"
-                                        onClick={() => toggleLabel(label)}
-                                        justifyContent="space-between"
-                                        transition="all 0.2s"
-                                    >
-                                        <HStack gap={3}>
-                                            <Circle size="2" bg={getEntityColor(label)} shadow={activeLabels.includes(label) ? "glow" : "none"} />
-                                            <Text fontSize="xs" fontWeight="black" color={activeLabels.includes(label) ? "fg" : "fg.muted"}>{toSentenceCase(label)}</Text>
-                                        </HStack>
-                                        <Badge variant="subtle" size="sm" rounded="md" bg="bg.muted">{nodeCounts[label]}</Badge>
-                                    </HStack>
-                                ))}
+                                {Object.keys(nodeCounts).sort().map((label) => {
+                                    const isActive = activeLabels.includes(label);
+                                    const color = getEntityColor(label);
+                                    return (
+                                        <Box
+                                            key={label}
+                                            as="button"
+                                            w="full"
+                                            p={3}
+                                            rounded="2xl"
+                                            bg={isActive ? "bg.muted" : "transparent"}
+                                            border="1.5px solid"
+                                            borderColor={isActive ? color + "44" : "transparent"}
+                                            _hover={{ bg: "bg.muted", borderColor: color + "33", transform: "translateX(3px)" }}
+                                            cursor="pointer"
+                                            onClick={() => toggleLabel(label)}
+                                            transition="all 0.25s cubic-bezier(0.19, 1, 0.22, 1)"
+                                            display="flex"
+                                            alignItems="center"
+                                            justifyContent="space-between"
+                                            style={{ boxShadow: isActive ? `0 0 12px ${color}18` : "none" }}
+                                        >
+                                            <HStack gap={3}>
+                                                <Circle 
+                                                    size="6" 
+                                                    style={{ background: isActive ? color + "22" : "transparent", border: `2px solid ${color}${isActive ? "aa" : "44"}`, transition: "all 0.25s" }}
+                                                >
+                                                    <Circle size="2" style={{ background: color, opacity: isActive ? 1 : 0.35 }} />
+                                                </Circle>
+                                                <VStack align="start" gap={0}>
+                                                    <Text fontSize="xs" fontWeight="black" color={isActive ? "fg" : "fg.muted"} transition="color 0.2s">{toSentenceCase(label)}</Text>
+                                                </VStack>
+                                            </HStack>
+                                            <HStack gap={2}>
+                                                <Badge 
+                                                    variant="solid"
+                                                    size="sm"
+                                                    rounded="full"
+                                                    px={2}
+                                                    fontSize="10px"
+                                                    fontWeight="black"
+                                                    style={{ background: isActive ? color + "33" : "transparent", color: isActive ? color : "var(--chakra-colors-fg-muted)", border: `1px solid ${isActive ? color + "44" : "transparent"}` }}
+                                                >
+                                                    {nodeCounts[label]}
+                                                </Badge>
+                                                {isActive && (
+                                                    <Circle 
+                                                        size="2" 
+                                                        style={{ background: color }}
+                                                        className="animate-pulse"
+                                                    />
+                                                )}
+                                            </HStack>
+                                        </Box>
+                                    );
+                                })}
                             </VStack>
                         </Box>
                     </VStack>
@@ -353,27 +392,64 @@ export const Discovery = ({ layoutMode = 'network' }: { layoutMode?: 'network' |
                         </HStack>
                         <Box maxH="320px" overflowY="auto" pr={2} className="custom-scrollbar">
                             <VStack align="stretch" gap={1.5}>
-                                {Object.keys(relCounts).sort().map(type => (
-                                    <HStack
-                                        key={type}
-                                        p={3}
-                                        rounded="xl"
-                                        bg={activeRelTypes.includes(type) ? "turf-green/5" : "transparent"}
-                                        border="1px solid"
-                                        borderColor={activeRelTypes.includes(type) ? "turf-green/20" : "transparent"}
-                                        _hover={{ bg: "bg.muted" }}
-                                        cursor="pointer"
-                                        onClick={() => toggleRelType(type)}
-                                        justifyContent="space-between"
-                                        transition="all 0.2s"
-                                    >
-                                        <HStack gap={3}>
-                                            <Box w="1.5" h="1.5" bg={activeRelTypes.includes(type) ? "turf-green" : "fg.muted"} rounded="full" opacity={activeRelTypes.includes(type) ? 1 : 0.3} />
-                                            <Text fontSize="xs" fontWeight="black" color={activeRelTypes.includes(type) ? "fg" : "fg.muted"}>{toSentenceCase(type)}</Text>
-                                        </HStack>
-                                        <Badge variant="subtle" size="sm" rounded="md" bg="bg.muted">{relCounts[type]}</Badge>
-                                    </HStack>
-                                ))}
+                                {Object.keys(relCounts).sort().map(type => {
+                                    const isActive = activeRelTypes.includes(type);
+                                    return (
+                                        <Box
+                                            key={type}
+                                            as="button"
+                                            w="full"
+                                            p={3}
+                                            rounded="2xl"
+                                            bg={isActive ? "turf-green/8" : "transparent"}
+                                            border="1.5px solid"
+                                            borderColor={isActive ? "turf-green/30" : "transparent"}
+                                            _hover={{ bg: "bg.muted", borderColor: "turf-green/15", transform: "translateX(3px)" }}
+                                            cursor="pointer"
+                                            onClick={() => toggleRelType(type)}
+                                            transition="all 0.25s cubic-bezier(0.19, 1, 0.22, 1)"
+                                            display="flex"
+                                            alignItems="center"
+                                            justifyContent="space-between"
+                                            style={{ boxShadow: isActive ? "0 0 12px rgba(16,123,65,0.12)" : "none" }}
+                                        >
+                                            <HStack gap={3}>
+                                                <Box 
+                                                    w="20px" h="20px" 
+                                                    display="flex" alignItems="center" justifyContent="center"
+                                                    rounded="md"
+                                                    style={{ background: isActive ? "rgba(16,123,65,0.2)" : "transparent", transition: "all 0.25s" }}
+                                                >
+                                                    <Box 
+                                                        w="10px" h="2px" 
+                                                        rounded="full" 
+                                                        style={{ background: isActive ? "var(--chakra-colors-turf-green)" : "rgba(255,255,255,0.2)", transition: "all 0.25s" }}
+                                                    />
+                                                </Box>
+                                                <Text fontSize="xs" fontWeight="black" color={isActive ? "fg" : "fg.muted"} transition="color 0.2s">
+                                                    {toSentenceCase(type)}
+                                                </Text>
+                                            </HStack>
+                                            <HStack gap={2}>
+                                                <Badge
+                                                    variant="solid"
+                                                    size="sm"
+                                                    rounded="full"
+                                                    px={2}
+                                                    fontSize="10px"
+                                                    fontWeight="black"
+                                                    style={{ 
+                                                        background: isActive ? "rgba(16,123,65,0.25)" : "transparent", 
+                                                        color: isActive ? "var(--chakra-colors-turf-green)" : "var(--chakra-colors-fg-muted)", 
+                                                        border: `1px solid ${isActive ? "rgba(16,123,65,0.4)" : "transparent"}` 
+                                                    }}
+                                                >
+                                                    {relCounts[type]}
+                                                </Badge>
+                                            </HStack>
+                                        </Box>
+                                    );
+                                })}
                             </VStack>
                         </Box>
                     </VStack>
@@ -382,6 +458,26 @@ export const Discovery = ({ layoutMode = 'network' }: { layoutMode?: 'network' |
 
             {/* Content Area */}
             <Box flex={1} h="full" position="relative" bg="bg.canvas">
+                {/* Loader Overlay */}
+                {(_isGraphLoading || isExpanding) && (
+                    <Flex 
+                        position="absolute" 
+                        top={0} left={0} right={0} bottom={0} 
+                        bg="bg.canvas/40" 
+                        backdropFilter="blur(4px)" 
+                        zIndex={50} 
+                        align="center" 
+                        justify="center"
+                    >
+                        <VStack gap={4}>
+                            <Box className="saving-spinner" boxSize="60px" border="4px solid" borderColor="turf-green/20" borderTopColor="turf-green" rounded="full" />
+                            <Text fontSize="xs" fontWeight="black" color="turf-green" letterSpacing="widest">
+                                {_isGraphLoading ? "INITIALIZING TOPOLOGY..." : "EXPANDING KNOWLEDGE..."}
+                            </Text>
+                        </VStack>
+                    </Flex>
+                )}
+
                 {currentView === 'network' && (
                     <NexusGraph2D 
                         data={displayData} 
