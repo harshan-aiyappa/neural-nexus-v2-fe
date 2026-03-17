@@ -115,7 +115,7 @@ export const Landing = () => {
                         <Circle size="8" bg="turf-green" shadow="glow">
                             <LuSparkles size="14px" color="white" />
                         </Circle>
-                        <Text fontSize="10px" fontWeight="black" color="fg.muted" letterSpacing="widest">NEXUS V2 CORE ENGINE // RELOADED</Text>
+                        <Text fontSize="10px" fontWeight="black" color="fg.muted" letterSpacing="widest">NEXUS CORE ENGINE // RELOADED</Text>
                     </HStack>
 
                     <Heading 
@@ -199,7 +199,7 @@ export const Landing = () => {
                             <Circle size="10" bg="turf-green/10" color="turf-green"><LuShieldCheck size="18px" /></Circle>
                             <VStack align="start" spaceY={0}>
                                 <Text fontWeight="black" fontSize="xs">ENTERPRISE</Text>
-                                <Text fontSize="9px" color="fg.muted">SECURITY V2</Text>
+                                <Text fontSize="9px" color="fg.muted">SECURITY</Text>
                             </VStack>
                         </HStack>
                     </Flex>

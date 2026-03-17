@@ -107,7 +107,7 @@ export const AnalyticsGallery = () => {
     }, [selectedView, flowData, radarMetrics]);
 
     return (
-        <Box p={8} maxW="1600px" mx="auto" ref={containerRef}>
+        <Box h="full" overflowY="auto" p={8} maxW="1600px" mx="auto" ref={containerRef} className="custom-scrollbar">
             {/* Header */}
             <Flex justifyContent="space-between" align="end" mb={10}>
                 <VStack align="start" gap={1}>
@@ -116,8 +116,8 @@ export const AnalyticsGallery = () => {
                             <LuActivity size="20px" />
                         </Circle>
                         <VStack align="start" gap={0}>
-                            <Text fontSize="10px" fontWeight="black" color="jungle-teal" letterSpacing="widest">ADVANCED VISUALIZATION</Text>
-                            <Heading size="xl" fontWeight="black" letterSpacing="tight">Analytics Gallery</Heading>
+                            <Text fontSize="10px" fontWeight="black" color="jungle-teal" letterSpacing="widest">PILLAR 03: ADVANCED VISUALIZATION</Text>
+                            <Heading size="xl" fontWeight="black" letterSpacing="tight">Analytics</Heading>
                         </VStack>
                     </HStack>
                     <Text color="fg.muted" fontSize="sm" maxW="600px">
@@ -154,7 +154,7 @@ export const AnalyticsGallery = () => {
             <Box 
                 className="gallery-card"
                 w="full" 
-                h="600px" 
+                h={{ base: "400px", xl: "600px" }} 
                 bg={cardBg} 
                 rounded="4xl" 
                 border="1px solid" 
@@ -179,8 +179,43 @@ export const AnalyticsGallery = () => {
                 </ErrorBoundary>
             </Box>
 
+            {/* Algorithms Suite */}
+            <VStack align="start" gap={6} mt={12}>
+                <HStack gap={3}>
+                    <Circle size="8" bg="jungle-teal/10" color="jungle-teal">
+                        <LuBox size="18px" />
+                    </Circle>
+                    <Heading size="md" fontWeight="black">Algorithmic Workspace (Manual Explore)</Heading>
+                </HStack>
+                <SimpleGrid columns={{ base: 1, md: 3, xl: 4 }} gap={4} w="full">
+                    {[
+                        "Degree Centrality", "PageRank", "Betweenness", "Closeness", 
+                        "Label Propagation", "Weakly Connected Components", "Louvain", 
+                        "K-Means Clustering", "DBSCAN", "Random Walk", 
+                        "A* Pathfinding", "Dijkstra", "Yen's K-Shortest"
+                    ].map((algo) => (
+                        <Box 
+                            key={algo} 
+                            p={5} 
+                            bg="bg.surface" 
+                            rounded="2xl" 
+                            border="1px solid" 
+                            borderColor={borderColor}
+                            _hover={{ borderColor: "jungle-teal", transform: "translateY(-2px)", shadow: " premium" }}
+                            transition="all 0.2s"
+                            cursor="pointer"
+                        >
+                            <HStack justifyContent="space-between">
+                                <Text fontSize="xs" fontWeight="black">{algo.toUpperCase()}</Text>
+                                <Button size="xs" variant="ghost" color="jungle-teal">Run</Button>
+                            </HStack>
+                        </Box>
+                    ))}
+                </SimpleGrid>
+            </VStack>
+
             {/* Secondary Insights */}
-            <SimpleGrid columns={{ base: 1, md: 3 }} gap={8} mt={8}>
+            <SimpleGrid columns={{ base: 1, md: 3 }} gap={8} mt={12}>
                 {[
                     { title: "Flow Density", value: "0.84", icon: LuActivity },
                     { title: "Clustering Coefficient", value: "0.421", icon: LuLayers },
@@ -197,11 +232,12 @@ export const AnalyticsGallery = () => {
                             <Heading size="lg" fontWeight="black" color="fg">{insight.value}</Heading>
                         </Skeleton>
                         <Text fontSize="xs" color="fg.muted" mt={2}>
-                            Calculated across 405 scientific documents.
+                            Calculated across folder context.
                         </Text>
                     </Box>
                 ))}
             </SimpleGrid>
+
         </Box>
     );
 };

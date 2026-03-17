@@ -109,6 +109,14 @@ export const nexusApi = {
         const response = await api.post('/ingest/process-embeddings', formData);
         return response.data;
     },
+    uploadUniversal: async (formData: FormData, folderId: string, useAi: boolean = true) => {
+        formData.append('folder_id', folderId);
+        formData.append('use_ai', useAi.toString());
+        const response = await api.post('/ingest/universal', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        return response.data;
+    },
 
     // Discovery & Stats
     chat: async (message: string, contextFolder?: string) => {
@@ -121,6 +129,11 @@ export const nexusApi = {
     },
     getGraph: async (folder?: string) => {
         const url = folder ? `/graph/full?folder=${folder}` : '/graph/full/';
+        const response = await api.get(url);
+        return response.data;
+    },
+    getNeighbors: async (nodeId: string, folderSlug?: string) => {
+        const url = folderSlug ? `/graph/neighbors?node_id=${nodeId}&folder=${folderSlug}` : `/graph/neighbors?node_id=${nodeId}`;
         const response = await api.get(url);
         return response.data;
     },
@@ -150,6 +163,44 @@ export const nexusApi = {
     },
     getAnalyticsMetrics: async () => {
         const response = await api.get('/analytics/metrics');
+        return response.data;
+    },
+    deepAnalyze: async (nodeId: string, folderSlug?: string, nodeName?: string, nodeLabel?: string) => {
+        const response = await api.post('/graph/deep-analyze', { 
+            node_id: nodeId, 
+            folder_slug: folderSlug,
+            node_name: nodeName,
+            node_label: nodeLabel
+        });
+        return response.data;
+    },
+    // Granular Graph Edits
+    updateNode: async (nodeId: string, properties: any) => {
+        const response = await api.patch(`/graph/nodes/${nodeId}`, { properties });
+        return response.data;
+    },
+    deleteNode: async (nodeId: string) => {
+        const response = await api.delete(`/graph/nodes/${nodeId}`);
+        return response.data;
+    },
+    createRelationship: async (sourceId: string, targetId: string, relType: string, properties: any = {}) => {
+        const response = await api.post('/graph/relationships', { 
+            source_id: sourceId, 
+            target_id: targetId, 
+            rel_type: relType, 
+            properties 
+        });
+        return response.data;
+    },
+    updateRelationship: async (relId: string, newType?: string, properties?: any) => {
+        const response = await api.patch(`/graph/relationships/${relId}`, { 
+            rel_type: newType, 
+            properties 
+        });
+        return response.data;
+    },
+    deleteRelationship: async (relId: string) => {
+        const response = await api.delete(`/graph/relationships/${relId}`);
         return response.data;
     }
 };

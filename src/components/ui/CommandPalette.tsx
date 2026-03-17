@@ -191,7 +191,7 @@ export const CommandPalette = () => {
                         </HStack>
                     </HStack>
                     <HStack spaceX={2}>
-                        <Text fontSize="10px" fontWeight="black" color="jungle-teal/60">NEURAL NEXUS V2</Text>
+                        <Text fontSize="10px" fontWeight="black" color="jungle-teal/60">NEURAL NEXUS</Text>
                     </HStack>
                 </HStack>
             </VStack>

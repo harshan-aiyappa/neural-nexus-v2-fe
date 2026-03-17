@@ -39,7 +39,7 @@ export const Logout = () => {
                 
                 <VStack spaceY={2}>
                     <Heading size="2xl" fontWeight="black" color="fg" letterSpacing="tight">Connection Terminated</Heading>
-                    <Text color="fg.muted" fontWeight="bold" letterSpacing="widest">V2 // SESSION ENDED SUCCESSFULLY</Text>
+                    <Text color="fg.muted" fontWeight="bold" letterSpacing="widest">SESSION ENDED SUCCESSFULLY</Text>
                 </VStack>
 
                 <Box w="300px" h="4px" bg="bg.muted" rounded="full" overflow="hidden" position="relative">

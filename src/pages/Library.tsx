@@ -1,6 +1,7 @@
 import { Box, Heading, Text, VStack, Button, SimpleGrid, Badge, HStack, Circle, Flex, Input } from '@chakra-ui/react';
 import { LuFolder, LuSearch, LuZap, LuNetwork, LuClock, LuPlus, LuExternalLink, LuSearchCode, LuArrowLeft } from 'react-icons/lu';
 import { useState, useEffect, useMemo } from 'react';
+import { useNexusStore } from '@/store/nexusStore';
 import { nexusApi, Node } from '@/services/api';
 import { useNavigate, useParams } from 'react-router-dom';
 import { LibrarySkeleton } from '@/components/ui/SkeletonLoaders';
@@ -13,25 +14,29 @@ export const Library = () => {
     const [folders, setFolders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // Sync browse state with URL slug
-    useEffect(() => {
-        if (slug) {
-            setBrowseFolder(slug);
-            setIsBrowsing(true);
-        } else {
-            setIsBrowsing(false);
-            setBrowseFolder('');
-        }
-    }, [slug]);
-
     // Browse Data State
     const [isBrowsing, setIsBrowsing] = useState(false);
-    const [browseFolder, setBrowseFolder] = useState<string>('');
+    const { selectedFolderSlug, setSelectedFolderSlug } = useNexusStore();
+    const [browseFolder, setBrowseFolder] = useState<string | null>(selectedFolderSlug);
     const [browseData, setBrowseData] = useState<{ nodes: Node[] }>({ nodes: [] });
     const [activeLabel, setActiveLabel] = useState<string>('All');
     const [browseSearch, setBrowseSearch] = useState('');
     const [visibleLimit, setVisibleLimit] = useState(50);
     const [isFetchingNodes, setIsFetchingNodes] = useState(false);
+
+    // Sync browse state with URL slug
+    useEffect(() => {
+        if (slug) {
+            setBrowseFolder(slug);
+            setIsBrowsing(true);
+            if (slug !== selectedFolderSlug) {
+                setSelectedFolderSlug(slug);
+            }
+        } else {
+            setBrowseFolder(null);
+            setIsBrowsing(false);
+        }
+    }, [slug, selectedFolderSlug, setSelectedFolderSlug]);
 
     const fetchFolders = async () => {
         try {
@@ -290,7 +295,7 @@ export const Library = () => {
     );
 
     return (
-        <Box p={8} w="full">
+        <Box h="full" overflowY="auto" p={8} w="full" className="custom-scrollbar">
             <VStack align="start" spaceY={8} w="full">
                 <VStack align="start" spaceY={2} w="full">
                     <HStack justifyContent="space-between" w="full">
